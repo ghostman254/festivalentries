@@ -22,6 +22,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ITEM_TYPES, SCHOOL_CATEGORIES } from '@/lib/constants';
+import heroBackground from '@/assets/hero-background.png';
 
 const itemIcons: Record<string, React.ReactNode> = {
   'Choral Verse': <Music className="h-6 w-6" />,
@@ -81,12 +82,12 @@ export default function Index() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-primary via-primary to-primary/90 text-primary-foreground py-16 sm:py-24 px-4 overflow-hidden">
-        {/* Animated background glow */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-white/10 rounded-full blur-3xl animate-pulse-ring"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary/20 rounded-full blur-3xl animate-float"></div>
-        </div>
+      <section 
+        className="relative text-primary-foreground py-16 sm:py-24 px-4 overflow-hidden bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${heroBackground})` }}
+      >
+        {/* Overlay for better text readability */}
+        <div className="absolute inset-0 bg-black/20"></div>
         
         <div className="max-w-4xl mx-auto text-center space-y-6 relative z-10">
           <Badge variant="secondary" className="mb-4 text-sm px-4 py-1 animate-fade-in glow-secondary">
