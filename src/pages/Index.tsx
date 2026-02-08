@@ -23,6 +23,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ITEM_TYPES, SCHOOL_CATEGORIES } from '@/lib/constants';
 import heroBackground from '@/assets/hero-background.png';
+import creativeItemsBg from '@/assets/creative-items-bg.png';
+import rulesBg from '@/assets/rules-bg.png';
+import aboutDoodles from '@/assets/about-doodles.png';
+import whoCanSubmitDoodles from '@/assets/who-can-submit-doodles.png';
+import stepsDoodles from '@/assets/steps-doodles.png';
+import codesDoodles from '@/assets/codes-doodles.png';
 
 const itemIcons: Record<string, React.ReactNode> = {
   'Choral Verse': <Music className="h-6 w-6" />,
@@ -117,8 +123,12 @@ export default function Index() {
       </section>
 
       {/* About Section */}
-      <section className="py-16 px-4 bg-muted/30">
-        <div className="max-w-4xl mx-auto">
+      <section 
+        className="py-16 px-4 relative bg-cover bg-center"
+        style={{ backgroundImage: `url(${aboutDoodles})` }}
+      >
+        <div className="absolute inset-0 bg-background/90"></div>
+        <div className="max-w-4xl mx-auto relative z-10">
           <div className="text-center mb-8 animate-fade-in">
             <h2 className="text-2xl sm:text-3xl font-heading font-bold text-foreground mb-4">
               About the Portal
@@ -138,8 +148,12 @@ export default function Index() {
       </section>
 
       {/* Who Can Submit */}
-      <section className="py-16 px-4">
-        <div className="max-w-4xl mx-auto">
+      <section 
+        className="py-16 px-4 relative bg-cover bg-center"
+        style={{ backgroundImage: `url(${whoCanSubmitDoodles})` }}
+      >
+        <div className="absolute inset-0 bg-background/85"></div>
+        <div className="max-w-4xl mx-auto relative z-10">
           <div className="text-center mb-10 animate-fade-in">
             <h2 className="text-2xl sm:text-3xl font-heading font-bold text-foreground mb-4">
               Who Can Submit
@@ -190,13 +204,17 @@ export default function Index() {
       </section>
 
       {/* Creative Items Grid */}
-      <section className="py-16 px-4 bg-muted/30">
-        <div className="max-w-6xl mx-auto">
+      <section 
+        className="py-16 px-4 relative bg-cover bg-center text-primary-foreground"
+        style={{ backgroundImage: `url(${creativeItemsBg})` }}
+      >
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="max-w-6xl mx-auto relative z-10">
           <div className="text-center mb-10 animate-fade-in">
-            <h2 className="text-2xl sm:text-3xl font-heading font-bold text-foreground mb-4">
+            <h2 className="text-2xl sm:text-3xl font-heading font-bold text-white mb-4">
               Creative Items You Can Register
             </h2>
-            <div className="w-16 h-1 bg-secondary mx-auto rounded-full"></div>
+            <div className="w-16 h-1 bg-white/50 mx-auto rounded-full"></div>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {ITEM_TYPES.map((item, idx) => (
@@ -230,8 +248,12 @@ export default function Index() {
       </section>
 
       {/* How to Submit */}
-      <section className="py-16 px-4">
-        <div className="max-w-4xl mx-auto">
+      <section 
+        className="py-16 px-4 relative bg-cover bg-center"
+        style={{ backgroundImage: `url(${stepsDoodles})` }}
+      >
+        <div className="absolute inset-0 bg-background/90"></div>
+        <div className="max-w-4xl mx-auto relative z-10">
           <div className="text-center mb-10 animate-fade-in">
             <h2 className="text-2xl sm:text-3xl font-heading font-bold text-foreground mb-4">
               How to Submit Your Items
@@ -269,8 +291,12 @@ export default function Index() {
       </section>
 
       {/* Item Codes Section */}
-      <section className="py-16 px-4 bg-muted/30">
-        <div className="max-w-4xl mx-auto">
+      <section 
+        className="py-16 px-4 relative bg-cover bg-center"
+        style={{ backgroundImage: `url(${codesDoodles})` }}
+      >
+        <div className="absolute inset-0 bg-background/90"></div>
+        <div className="max-w-4xl mx-auto relative z-10">
           <div className="text-center mb-8 animate-fade-in">
             <h2 className="text-2xl sm:text-3xl font-heading font-bold text-foreground mb-4">
               Item Codes
@@ -299,13 +325,17 @@ export default function Index() {
       </section>
 
       {/* Rules Section */}
-      <section className="py-16 px-4">
-        <div className="max-w-4xl mx-auto">
+      <section 
+        className="py-16 px-4 relative bg-cover bg-center text-primary-foreground"
+        style={{ backgroundImage: `url(${rulesBg})` }}
+      >
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="max-w-4xl mx-auto relative z-10">
           <div className="text-center mb-10 animate-fade-in">
-            <h2 className="text-2xl sm:text-3xl font-heading font-bold text-foreground mb-4">
+            <h2 className="text-2xl sm:text-3xl font-heading font-bold text-white mb-4">
               Important Rules
             </h2>
-            <div className="w-16 h-1 bg-secondary mx-auto rounded-full"></div>
+            <div className="w-16 h-1 bg-white/50 mx-auto rounded-full"></div>
           </div>
           <Card className="border-2 border-destructive/20 bg-destructive/5 shadow-lg hover-raise animate-fade-in-up">
             <CardContent className="p-6 sm:p-8">
