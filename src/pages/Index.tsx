@@ -65,9 +65,9 @@ export default function Index() {
             <GraduationCap className="h-6 w-6 text-primary" />
             <span className="font-heading font-bold text-foreground">Creative Arts Portal</span>
           </div>
-          <Link to="/submit">
+          <Link to="/admin/login">
             <Button size="sm" variant="outline">
-              Submit Items
+              Admin Login
             </Button>
           </Link>
         </div>
@@ -89,9 +89,9 @@ export default function Index() {
             This portal provides a simple, structured, and fair way for schools to register creative items for participation.
           </p>
           <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link to="/submit">
+            <Link to="/admin/login">
               <Button size="lg" variant="secondary" className="text-base font-semibold px-8 h-12">
-                Start Submission
+                Admin Login
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
@@ -306,9 +306,9 @@ export default function Index() {
             Start your submission now and get your unique item codes for the upcoming creative arts event.
           </p>
           <div className="pt-4">
-            <Link to="/submit">
+            <Link to="/admin/login">
               <Button size="lg" variant="secondary" className="text-base font-semibold px-10 h-14">
-                Start Submission Now
+                Admin Login to Submit
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
@@ -327,12 +327,8 @@ export default function Index() {
             Official platform for school creative performance item registration
           </p>
           <div className="mt-4 flex items-center justify-center gap-4">
-            <Link to="/submit" className="text-sm text-primary hover:underline">
-              Submit Items
-            </Link>
-            <span className="text-muted-foreground">•</span>
-            <Link to="/admin/login" className="text-sm text-muted-foreground hover:text-foreground">
-              Admin Access
+            <Link to="/admin/login" className="text-sm text-primary hover:underline">
+              Admin Login
             </Link>
           </div>
         </div>

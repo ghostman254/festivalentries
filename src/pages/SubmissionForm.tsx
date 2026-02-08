@@ -20,6 +20,7 @@ export default function SubmissionForm() {
   const [submitting, setSubmitting] = useState(false);
   const [submissionsOpen, setSubmissionsOpen] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [errors, setErrors] = useState<Record<string, any>>({});
 
   const [form, setForm] = useState<SubmissionFormData>({
@@ -31,12 +32,49 @@ export default function SubmissionForm() {
   });
 
   useEffect(() => {
-    supabase.from('app_settings').select('value').eq('key', 'submissions_open').maybeSingle()
-      .then(({ data }) => {
-        if (data) setSubmissionsOpen(data.value === 'true');
-        setLoading(false);
-      });
-  }, []);
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        navigate('/admin/login', { replace: true });
+        return;
+      }
+
+      // Check if user has admin role
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', session.user.id)
+        .single();
+
+      if (!roleData || roleData.role !== 'admin') {
+        toast({ 
+          title: 'Access Denied', 
+          description: 'Only administrators can submit items.', 
+          variant: 'destructive' 
+        });
+        await supabase.auth.signOut();
+        navigate('/admin/login', { replace: true });
+        return;
+      }
+
+      setIsAdmin(true);
+
+      // Check if submissions are open
+      const { data: settingsData } = await supabase
+        .from('app_settings')
+        .select('value')
+        .eq('key', 'submissions_open')
+        .maybeSingle();
+
+      if (settingsData) {
+        setSubmissionsOpen(settingsData.value === 'true');
+      }
+      setLoading(false);
+    };
+
+    checkAuth();
+  }, [navigate, toast]);
 
   const addItem = () => {
     if (form.items.length < MAX_ITEMS) {
