@@ -45,18 +45,50 @@ export default function AdminDashboard() {
   const [expandedSchool, setExpandedSchool] = useState<string | null>(null);
 
   useEffect(() => {
+    const checkAdminRole = async (userId: string) => {
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .single();
+      
+      if (!roleData || roleData.role !== 'admin') {
+        toast({ 
+          title: 'Access Denied', 
+          description: 'You do not have administrator privileges.', 
+          variant: 'destructive' 
+        });
+        await supabase.auth.signOut();
+        navigate('/admin/login', { replace: true });
+        return false;
+      }
+      return true;
+    };
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session) {
+        navigate('/admin/login', { replace: true });
+        return;
+      }
       setSession(session);
-      if (!session) navigate('/admin/login', { replace: true });
+      setTimeout(() => {
+        checkAdminRole(session.user.id);
+      }, 0);
     });
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (!session) navigate('/admin/login', { replace: true });
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session) {
+        navigate('/admin/login', { replace: true });
+        return;
+      }
+      const isAdmin = await checkAdminRole(session.user.id);
+      if (isAdmin) {
+        setSession(session);
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, toast]);
 
   useEffect(() => {
     if (!session) return;

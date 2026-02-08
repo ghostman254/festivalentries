@@ -20,19 +20,47 @@ export default function AdminLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) navigate('/admin', { replace: true });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session) {
+        // Check if user has admin role
+        const { data: roleData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', session.user.id)
+          .single();
+        
+        if (roleData?.role === 'admin') {
+          navigate('/admin', { replace: true });
+        } else {
+          // User is authenticated but not an admin
+          toast({ 
+            title: 'Access Denied', 
+            description: 'You do not have administrator privileges.', 
+            variant: 'destructive' 
+          });
+          await supabase.auth.signOut();
+        }
+      }
     });
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) navigate('/admin', { replace: true });
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session) {
+        const { data: roleData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', session.user.id)
+          .single();
+        
+        if (roleData?.role === 'admin') {
+          navigate('/admin', { replace: true });
+        }
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,26 +73,14 @@ export default function AdminLogin() {
 
     setLoading(true);
     try {
-      if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
-          email: email.trim(),
-          password,
-          options: { emailRedirectTo: `${window.location.origin}/admin` },
-        });
-        if (error) throw error;
-        toast({ title: 'Account created', description: 'Check your email to confirm your account.' });
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email: email.trim(),
-          password,
-        });
-        if (error) throw error;
-      }
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+      if (error) throw error;
+      // The onAuthStateChange callback will handle navigation after role check
     } catch (err: any) {
-      const msg = err.message?.includes('already registered')
-        ? 'This email is already registered. Try logging in.'
-        : err.message || 'Authentication failed.';
-      toast({ title: 'Error', description: msg, variant: 'destructive' });
+      toast({ title: 'Error', description: err.message || 'Authentication failed.', variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -79,7 +95,7 @@ export default function AdminLogin() {
               <GraduationCap className="h-6 w-6 text-primary-foreground" />
             </div>
           </div>
-          <CardTitle>{isSignUp ? 'Create Admin Account' : 'Admin Login'}</CardTitle>
+          <CardTitle>Admin Login</CardTitle>
           <CardDescription>Access the administration dashboard</CardDescription>
         </CardHeader>
         <CardContent>
@@ -94,10 +110,7 @@ export default function AdminLogin() {
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               <LogIn className="h-4 w-4 mr-2" />
-              {loading ? 'Please wait...' : isSignUp ? 'Sign Up' : 'Sign In'}
-            </Button>
-            <Button type="button" variant="ghost" className="w-full text-sm" onClick={() => setIsSignUp(!isSignUp)}>
-              {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
+              {loading ? 'Please wait...' : 'Sign In'}
             </Button>
           </form>
         </CardContent>
