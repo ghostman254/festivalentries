@@ -1,11 +1,5 @@
-import { useEffect, useRef, useCallback } from 'react';
-
-// Turnstile site key - this is your public site key from Cloudflare
-// For testing, you can use Cloudflare's test keys:
-// - Always passes: 1x00000000000000000000AA
-// - Always blocks: 2x00000000000000000000AB
-// - Forces interactive challenge: 3x00000000000000000000FF
-const TURNSTILE_SITE_KEY = '1x00000000000000000000AA'; // Test key - always passes
+import { useEffect, useRef, useCallback, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 declare global {
   interface Window {
@@ -37,9 +31,31 @@ export function TurnstileWidget({ onVerify, onError, onExpired }: TurnstileWidge
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
   const scriptLoadedRef = useRef(false);
+  const [siteKey, setSiteKey] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch the site key from the edge function
+  useEffect(() => {
+    async function fetchSiteKey() {
+      try {
+        const { data, error } = await supabase.functions.invoke('get-turnstile-key');
+        if (error) throw error;
+        if (data?.siteKey) {
+          setSiteKey(data.siteKey);
+        } else {
+          throw new Error('No site key returned');
+        }
+      } catch (err) {
+        console.error('Failed to fetch Turnstile site key:', err);
+        setError('CAPTCHA configuration error');
+        onError?.();
+      }
+    }
+    fetchSiteKey();
+  }, [onError]);
 
   const renderWidget = useCallback(() => {
-    if (!containerRef.current || !window.turnstile) return;
+    if (!containerRef.current || !window.turnstile || !siteKey) return;
 
     // Remove existing widget if any
     if (widgetIdRef.current) {
@@ -55,16 +71,18 @@ export function TurnstileWidget({ onVerify, onError, onExpired }: TurnstileWidge
 
     // Render new widget
     widgetIdRef.current = window.turnstile.render(containerRef.current, {
-      sitekey: TURNSTILE_SITE_KEY,
+      sitekey: siteKey,
       callback: onVerify,
       'error-callback': onError,
       'expired-callback': onExpired,
       theme: 'auto',
       size: 'normal',
     });
-  }, [onVerify, onError, onExpired]);
+  }, [siteKey, onVerify, onError, onExpired]);
 
   useEffect(() => {
+    if (!siteKey) return;
+
     // Check if script is already loaded
     if (window.turnstile) {
       renderWidget();
@@ -97,7 +115,15 @@ export function TurnstileWidget({ onVerify, onError, onExpired }: TurnstileWidge
         }
       }
     };
-  }, [renderWidget]);
+  }, [siteKey, renderWidget]);
+
+  if (error) {
+    return (
+      <div className="flex justify-center my-4 text-destructive text-sm">
+        {error}
+      </div>
+    );
+  }
 
   return (
     <div 
@@ -110,5 +136,4 @@ export function TurnstileWidget({ onVerify, onError, onExpired }: TurnstileWidge
 
 export function resetTurnstile() {
   // This function can be called to reset the widget if needed
-  // For now, we'll just reload by triggering a re-render
 }
