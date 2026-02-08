@@ -126,7 +126,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin: { Args: { check_user_id: string }; Returns: boolean }
     }
     Enums: {
       item_language: "English" | "French" | "German"
