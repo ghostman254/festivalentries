@@ -276,7 +276,7 @@ export default function AdminDashboard() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    navigate('/admin/login', { replace: true });
+    navigate('/', { replace: true });
   };
 
   if (loading) {
