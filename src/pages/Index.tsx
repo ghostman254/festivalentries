@@ -208,19 +208,19 @@ export default function Index() {
         className="py-16 px-4 relative bg-cover bg-center text-primary-foreground"
         style={{ backgroundImage: `url(${creativeItemsBg})` }}
       >
-        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="absolute inset-0 bg-black/25"></div>
         <div className="max-w-6xl mx-auto relative z-10">
           <div className="text-center mb-10 animate-fade-in">
-            <h2 className="text-2xl sm:text-3xl font-heading font-bold text-white mb-4">
+            <h2 className="text-2xl sm:text-3xl font-heading font-extrabold text-white mb-4 drop-shadow-lg">
               Creative Items You Can Register
             </h2>
-            <div className="w-16 h-1 bg-white/50 mx-auto rounded-full"></div>
+            <div className="w-16 h-1 bg-white/70 mx-auto rounded-full"></div>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {ITEM_TYPES.map((item, idx) => (
               <Card 
                 key={item} 
-                className="card-hover hover-glow-primary cursor-default animate-fade-in-up"
+                className="card-hover hover-glow-primary cursor-default animate-fade-in-up bg-white/95 backdrop-blur-sm"
                 style={{ animationDelay: `${idx * 0.05}s` }}
               >
                 <CardContent className="p-4 text-center">
@@ -229,7 +229,7 @@ export default function Index() {
                       {itemIcons[item] || <Sparkles className="h-6 w-6" />}
                     </div>
                   </div>
-                  <p className="font-medium text-foreground text-sm">{item}</p>
+                  <p className="font-semibold text-foreground text-sm">{item}</p>
                   {item === 'Play' && (
                     <p className="text-xs text-muted-foreground mt-1">(English, French, German)</p>
                   )}
@@ -237,9 +237,9 @@ export default function Index() {
               </Card>
             ))}
           </div>
-          <Card className="mt-8 border-secondary/30 bg-secondary/5 hover-raise animate-fade-in-up">
+          <Card className="mt-8 border-white/30 bg-white/95 hover-raise animate-fade-in-up backdrop-blur-sm">
             <CardContent className="p-4 text-center">
-              <p className="text-sm text-foreground">
+              <p className="text-sm text-foreground font-medium">
                 📋 <strong>Note:</strong> Files and scripts are NOT uploaded at this stage.
               </p>
             </CardContent>
@@ -329,19 +329,19 @@ export default function Index() {
         className="py-16 px-4 relative bg-cover bg-center text-primary-foreground"
         style={{ backgroundImage: `url(${rulesBg})` }}
       >
-        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="absolute inset-0 bg-black/40"></div>
         <div className="max-w-4xl mx-auto relative z-10">
           <div className="text-center mb-10 animate-fade-in">
-            <h2 className="text-2xl sm:text-3xl font-heading font-bold text-white mb-4">
+            <h2 className="text-2xl sm:text-3xl font-heading font-extrabold text-white mb-4 drop-shadow-lg">
               Important Rules
             </h2>
-            <div className="w-16 h-1 bg-white/50 mx-auto rounded-full"></div>
+            <div className="w-16 h-1 bg-white/70 mx-auto rounded-full"></div>
           </div>
-          <Card className="border-2 border-destructive/20 bg-destructive/5 shadow-lg hover-raise animate-fade-in-up">
+          <Card className="border-2 border-white/20 bg-white/95 shadow-2xl hover-raise animate-fade-in-up backdrop-blur-sm">
             <CardContent className="p-6 sm:p-8">
               <div className="flex items-center gap-3 mb-6">
                 <AlertTriangle className="h-6 w-6 text-destructive animate-bounce-subtle" />
-                <span className="font-heading font-semibold text-foreground">Please Read Carefully</span>
+                <span className="font-heading font-bold text-foreground text-lg">Please Read Carefully</span>
               </div>
               <ul className="space-y-4">
                 {rules.map((rule, idx) => (
@@ -351,7 +351,7 @@ export default function Index() {
                     style={{ animationDelay: `${idx * 0.1}s` }}
                   >
                     <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5 transition-transform duration-200 hover:scale-110" />
-                    <span className="text-foreground">{rule}</span>
+                    <span className="text-foreground font-medium">{rule}</span>
                   </li>
                 ))}
               </ul>
