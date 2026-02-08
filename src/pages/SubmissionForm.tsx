@@ -79,14 +79,13 @@ export default function SubmissionForm() {
 
     setSubmitting(true);
     try {
-      // Check for duplicate school name (case-insensitive)
-      const { data: existingSchool } = await supabase
-        .from('schools')
-        .select('id, school_name')
-        .ilike('school_name', form.schoolName.trim())
-        .maybeSingle();
+      // Check for duplicate school name using secure RPC function (doesn't expose PII)
+      const { data: schoolExists, error: checkError } = await supabase
+        .rpc('check_school_exists', { school_name_param: form.schoolName.trim() });
 
-      if (existingSchool) {
+      if (checkError) throw checkError;
+
+      if (schoolExists) {
         setErrors({ schoolName: 'This school is already registered in the system.' });
         toast({ 
           title: 'Duplicate Entry', 
