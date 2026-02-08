@@ -11,6 +11,7 @@ import { SCHOOL_CATEGORIES, MAX_ITEMS } from '@/lib/constants';
 import { submissionSchema, type SubmissionFormData, type ItemFormData } from '@/lib/validation';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { logAndSanitizeError } from '@/lib/error-utils';
 
 const emptyItem = (): ItemFormData => ({ itemType: undefined as any, language: null });
 
@@ -130,18 +131,19 @@ export default function SubmissionForm() {
       navigate('/confirmation', {
         state: { school: data.school, items: data.items },
       });
-    } catch (err: any) {
-      const message = err.message || 'Something went wrong.';
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : '';
       
-      // Handle rate limiting
-      if (message.includes('Too many submissions')) {
+      // Handle rate limiting with specific message
+      if (errorMessage.includes('Too many submissions')) {
         toast({ 
           title: 'Rate Limited', 
           description: 'Too many submissions from your location. Please try again in an hour.', 
           variant: 'destructive' 
         });
       } else {
-        toast({ title: 'Submission Failed', description: message, variant: 'destructive' });
+        // Use sanitized error for all other cases
+        toast({ title: 'Submission Failed', description: logAndSanitizeError(err, 'general', 'Submission error'), variant: 'destructive' });
       }
     } finally {
       setSubmitting(false);
