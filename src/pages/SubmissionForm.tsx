@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Plus, Send, GraduationCap, AlertCircle, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,7 +7,6 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ItemFormCard } from '@/components/ItemFormCard';
-import { TurnstileWidget } from '@/components/TurnstileWidget';
 import { SCHOOL_CATEGORIES, MAX_ITEMS } from '@/lib/constants';
 import { submissionSchema, type SubmissionFormData, type ItemFormData } from '@/lib/validation';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,8 +21,11 @@ export default function SubmissionForm() {
   const [submissionsOpen, setSubmissionsOpen] = useState(true);
   const [loading, setLoading] = useState(true);
   const [errors, setErrors] = useState<Record<string, any>>({});
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
-  const [captchaError, setCaptchaError] = useState(false);
+  
+  // Honeypot field for spam protection (should remain empty)
+  const honeypotRef = useRef<HTMLInputElement>(null);
+  // Track form load time for timing-based protection
+  const formLoadTime = useRef(Date.now());
 
   const [form, setForm] = useState<SubmissionFormData>({
     schoolName: '',
@@ -39,20 +41,6 @@ export default function SubmissionForm() {
         if (data) setSubmissionsOpen(data.value === 'true');
         setLoading(false);
       });
-  }, []);
-
-  const handleTurnstileVerify = useCallback((token: string) => {
-    setTurnstileToken(token);
-    setCaptchaError(false);
-  }, []);
-
-  const handleTurnstileError = useCallback(() => {
-    setTurnstileToken(null);
-    setCaptchaError(true);
-  }, []);
-
-  const handleTurnstileExpired = useCallback(() => {
-    setTurnstileToken(null);
   }, []);
 
   const addItem = () => {
@@ -73,10 +61,18 @@ export default function SubmissionForm() {
     e.preventDefault();
     setErrors({});
 
-    // Check CAPTCHA first
-    if (!turnstileToken) {
-      setCaptchaError(true);
-      toast({ title: 'Verification Required', description: 'Please complete the CAPTCHA verification.', variant: 'destructive' });
+    // Honeypot check - if filled, silently reject (bot detection)
+    if (honeypotRef.current?.value) {
+      // Fake success to confuse bots
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      navigate('/confirmation', { state: { school: { school_name: form.schoolName }, items: [] } });
+      return;
+    }
+
+    // Timing check - submissions faster than 3 seconds are likely bots
+    const timeSpent = Date.now() - formLoadTime.current;
+    if (timeSpent < 3000) {
+      toast({ title: 'Please slow down', description: 'Please take your time filling out the form.', variant: 'destructive' });
       return;
     }
 
@@ -103,7 +99,7 @@ export default function SubmissionForm() {
 
     setSubmitting(true);
     try {
-      // Submit via edge function with rate limiting and CAPTCHA verification
+      // Submit via edge function with rate limiting
       const { data, error } = await supabase.functions.invoke('submit-registration', {
         body: {
           schoolName: form.schoolName.trim(),
@@ -114,7 +110,7 @@ export default function SubmissionForm() {
             itemType: item.itemType,
             language: item.language || null,
           })),
-          turnstileToken,
+          formLoadTime: formLoadTime.current,
         },
       });
 
@@ -135,9 +131,6 @@ export default function SubmissionForm() {
         state: { school: data.school, items: data.items },
       });
     } catch (err: any) {
-      // Reset CAPTCHA on error so user can try again
-      setTurnstileToken(null);
-      
       const message = err.message || 'Something went wrong.';
       
       // Handle rate limiting
@@ -292,32 +285,20 @@ export default function SubmissionForm() {
             </CardContent>
           </Card>
 
-          {/* CAPTCHA Verification */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Verification</CardTitle>
-              <CardDescription>Complete the verification to submit</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <TurnstileWidget
-                onVerify={handleTurnstileVerify}
-                onError={handleTurnstileError}
-                onExpired={handleTurnstileExpired}
-              />
-              {captchaError && (
-                <p className="text-sm text-destructive text-center mt-2">
-                  Please complete the CAPTCHA verification
-                </p>
-              )}
-              {turnstileToken && (
-                <p className="text-sm text-primary text-center mt-2">
-                  ✓ Verification complete
-                </p>
-              )}
-            </CardContent>
-          </Card>
+          {/* Honeypot field - hidden from users, catches bots */}
+          <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0, overflow: 'hidden' }}>
+            <label htmlFor="website">Website</label>
+            <input
+              ref={honeypotRef}
+              type="text"
+              id="website"
+              name="website"
+              tabIndex={-1}
+              autoComplete="off"
+            />
+          </div>
 
-          <Button type="submit" className="w-full h-12 text-base font-semibold" disabled={submitting || !turnstileToken}>
+          <Button type="submit" className="w-full h-12 text-base font-semibold" disabled={submitting}>
             <Send className="h-4 w-4 mr-2" />
             {submitting ? 'Submitting...' : 'Submit Registration'}
           </Button>

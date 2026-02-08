@@ -57,35 +57,7 @@ interface SubmissionRequest {
   teacherName: string;
   phoneNumber: string;
   items: SubmissionItem[];
-  turnstileToken: string;
-}
-
-async function verifyTurnstile(token: string, ip: string): Promise<boolean> {
-  const secretKey = Deno.env.get('TURNSTILE_SECRET_KEY');
-  
-  if (!secretKey) {
-    console.error('TURNSTILE_SECRET_KEY not configured');
-    return false;
-  }
-
-  try {
-    const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        secret: secretKey,
-        response: token,
-        remoteip: ip,
-      }),
-    });
-
-    const result = await response.json();
-    console.log('Turnstile verification result:', result.success);
-    return result.success === true;
-  } catch (error) {
-    console.error('Turnstile verification error:', error);
-    return false;
-  }
+  formLoadTime?: number;
 }
 
 function checkRateLimit(ip: string): { allowed: boolean; retryAfter?: number } {
@@ -167,9 +139,12 @@ function validateSubmission(data: SubmissionRequest): { valid: boolean; error?: 
     }
   }
 
-  // Turnstile token
-  if (!data.turnstileToken || typeof data.turnstileToken !== 'string') {
-    return { valid: false, error: 'CAPTCHA verification is required' };
+  // Server-side timing check (minimum 2 seconds to fill form)
+  if (data.formLoadTime) {
+    const timeSpent = Date.now() - data.formLoadTime;
+    if (timeSpent < 2000) {
+      return { valid: false, error: 'Form submitted too quickly. Please try again.' };
+    }
   }
 
   return { valid: true };
@@ -225,18 +200,6 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-
-    // Verify CAPTCHA
-    const captchaValid = await verifyTurnstile(body.turnstileToken, ip);
-    if (!captchaValid) {
-      console.log('CAPTCHA verification failed');
-      return new Response(JSON.stringify({ error: 'CAPTCHA verification failed. Please try again.' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    console.log('CAPTCHA verified successfully');
 
     // Create Supabase client with service role for insert
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
