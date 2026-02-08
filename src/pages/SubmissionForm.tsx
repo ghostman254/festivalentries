@@ -79,6 +79,24 @@ export default function SubmissionForm() {
 
     setSubmitting(true);
     try {
+      // Check for duplicate school name (case-insensitive)
+      const { data: existingSchool } = await supabase
+        .from('schools')
+        .select('id, school_name')
+        .ilike('school_name', form.schoolName.trim())
+        .maybeSingle();
+
+      if (existingSchool) {
+        setErrors({ schoolName: 'This school is already registered in the system.' });
+        toast({ 
+          title: 'Duplicate Entry', 
+          description: 'This school is already registered. Each school can only submit once.', 
+          variant: 'destructive' 
+        });
+        setSubmitting(false);
+        return;
+      }
+
       // Insert school
       const { data: school, error: schoolError } = await supabase
         .from('schools')
