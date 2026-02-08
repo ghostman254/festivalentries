@@ -122,7 +122,7 @@ export default function AdminDashboard() {
     const [schoolsRes, settingsRes, adminsRes] = await Promise.all([
       supabase.from('schools').select('*').order('created_at', { ascending: false }),
       supabase.from('app_settings').select('value').eq('key', 'submissions_open').maybeSingle(),
-      supabase.from('user_roles').select('*').eq('role', 'admin'),
+      supabase.rpc('get_admin_users'),
     ]);
 
     if (schoolsRes.data) {
@@ -490,9 +490,9 @@ export default function AdminDashboard() {
                         <Users className="h-4 w-4 text-primary" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-foreground">{admin.user_id.slice(0, 8)}...</p>
+                        <p className="text-sm font-medium text-foreground">{admin.email || 'No email'}</p>
                         <p className="text-xs text-muted-foreground">
-                          Added {new Date(admin.created_at).toLocaleDateString()}
+                          Added {new Date(admin.created_at!).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
