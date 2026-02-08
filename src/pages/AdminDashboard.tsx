@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { logAndSanitizeError } from '@/lib/error-utils';
 import { SCHOOL_CATEGORIES, ITEM_TYPES } from '@/lib/constants';
 import type { Session } from '@supabase/supabase-js';
 import { z } from 'zod';
@@ -181,11 +182,8 @@ export default function AdminDashboard() {
       setNewAdminPassword('');
       setShowAdminDialog(false);
       fetchData();
-    } catch (err: any) {
-      const msg = err.message?.includes('already registered')
-        ? 'This email is already registered.'
-        : err.message || 'Failed to add admin.';
-      toast({ title: 'Error', description: msg, variant: 'destructive' });
+    } catch (err: unknown) {
+      toast({ title: 'Error', description: logAndSanitizeError(err, 'auth', 'Admin creation error'), variant: 'destructive' });
     } finally {
       setAddingAdmin(false);
     }

@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { logAndSanitizeError } from '@/lib/error-utils';
 import { z } from 'zod';
 
 const loginSchema = z.object({
@@ -79,8 +80,8 @@ export default function AdminLogin() {
       });
       if (error) throw error;
       // The onAuthStateChange callback will handle navigation after role check
-    } catch (err: any) {
-      toast({ title: 'Error', description: err.message || 'Authentication failed.', variant: 'destructive' });
+    } catch (err: unknown) {
+      toast({ title: 'Error', description: logAndSanitizeError(err, 'auth', 'Login error'), variant: 'destructive' });
     } finally {
       setLoading(false);
     }
