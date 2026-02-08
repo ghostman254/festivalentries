@@ -18,13 +18,21 @@ export function ItemFormCard({ index, item, onChange, onRemove, canRemove, error
   const showLanguage = item.itemType === 'Play';
 
   return (
-    <div className="rounded-lg border border-border bg-card p-4 space-y-4 animate-fade-in">
+    <div className="rounded-lg border border-border bg-card p-4 space-y-4 hover-raise hover-glow-primary transition-all duration-300">
       <div className="flex items-center justify-between">
-        <h4 className="text-sm font-heading font-semibold text-foreground">
+        <h4 className="text-sm font-heading font-semibold text-foreground flex items-center gap-2">
+          <span className="h-6 w-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">
+            {index + 1}
+          </span>
           Item {index + 1}
         </h4>
         {canRemove && (
-          <Button variant="ghost" size="sm" onClick={onRemove} className="text-destructive hover:text-destructive">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={onRemove} 
+            className="text-destructive hover:text-destructive hover:scale-110 transition-transform duration-200"
+          >
             <Trash2 className="h-4 w-4" />
           </Button>
         )}
@@ -40,16 +48,16 @@ export function ItemFormCard({ index, item, onChange, onRemove, canRemove, error
             onChange(newItem);
           }}
         >
-          <SelectTrigger className="bg-card">
+          <SelectTrigger className="bg-card transition-all duration-200 hover:border-primary/50">
             <SelectValue placeholder="Select item type" />
           </SelectTrigger>
           <SelectContent className="bg-popover z-50">
             {ITEM_TYPES.map(t => (
-              <SelectItem key={t} value={t}>{t}</SelectItem>
+              <SelectItem key={t} value={t} className="transition-colors duration-150">{t}</SelectItem>
             ))}
           </SelectContent>
         </Select>
-        {errors?.itemType && <p className="text-sm text-destructive">{errors.itemType}</p>}
+        {errors?.itemType && <p className="text-sm text-destructive animate-fade-in">{errors.itemType}</p>}
       </div>
 
       {showLanguage && (
@@ -59,16 +67,16 @@ export function ItemFormCard({ index, item, onChange, onRemove, canRemove, error
             value={item.language || ''}
             onValueChange={(val) => onChange({ ...item, language: val as any })}
           >
-            <SelectTrigger className="bg-card">
+            <SelectTrigger className="bg-card transition-all duration-200 hover:border-primary/50">
               <SelectValue placeholder="Select language" />
             </SelectTrigger>
             <SelectContent className="bg-popover z-50">
               {LANGUAGES.map(l => (
-                <SelectItem key={l} value={l}>{l}</SelectItem>
+                <SelectItem key={l} value={l} className="transition-colors duration-150">{l}</SelectItem>
               ))}
             </SelectContent>
           </Select>
-          {errors?.language && <p className="text-sm text-destructive">{errors.language}</p>}
+          {errors?.language && <p className="text-sm text-destructive animate-fade-in">{errors.language}</p>}
         </div>
       )}
     </div>
