@@ -176,18 +176,13 @@ export default function SubmissionForm() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="bg-primary text-primary-foreground py-6 px-4 relative overflow-hidden">
-        {/* Animated background glow */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-0 right-1/3 w-32 h-32 bg-white/10 rounded-full blur-2xl animate-pulse-ring"></div>
-        </div>
-        
-        <div className="max-w-2xl mx-auto relative z-10 animate-fade-in">
-          <Link to="/" className="inline-flex items-center gap-1 text-sm opacity-80 hover:opacity-100 mb-3 transition-all duration-200 hover:-translate-x-1">
+        <div className="max-w-2xl mx-auto relative z-10">
+          <Link to="/" className="inline-flex items-center gap-1 text-sm opacity-80 hover:opacity-100 mb-3 transition-opacity duration-200">
             <ArrowLeft className="h-4 w-4" />
             Back to Home
           </Link>
           <div className="flex items-center gap-3">
-            <GraduationCap className="h-8 w-8 flex-shrink-0 animate-bounce-subtle" />
+            <GraduationCap className="h-8 w-8 flex-shrink-0" />
             <div>
               <h1 className="text-xl sm:text-2xl font-heading font-bold">Creative Items Registration</h1>
               <p className="text-sm opacity-90">Register your school's creative performance items</p>
@@ -199,10 +194,10 @@ export default function SubmissionForm() {
       <main className="max-w-2xl mx-auto px-4 py-8">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Section A: School Details */}
-          <Card className="hover-raise animate-fade-in-up">
+          <Card>
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-primary animate-pulse"></span>
+                <span className="h-2 w-2 rounded-full bg-primary"></span>
                 Section A: School Details
               </CardTitle>
               <CardDescription>Enter your school information</CardDescription>
@@ -214,9 +209,8 @@ export default function SubmissionForm() {
                   value={form.schoolName}
                   onChange={e => setForm(f => ({ ...f, schoolName: e.target.value }))}
                   placeholder="Enter school name"
-                  className="transition-all duration-200 focus:glow-primary"
                 />
-                {errors.schoolName && <p className="text-sm text-destructive animate-fade-in">{errors.schoolName}</p>}
+                {errors.schoolName && <p className="text-sm text-destructive">{errors.schoolName}</p>}
               </div>
 
               <div className="space-y-2">
@@ -225,7 +219,7 @@ export default function SubmissionForm() {
                   value={form.category || ''}
                   onValueChange={val => setForm(f => ({ ...f, category: val as any }))}
                 >
-                  <SelectTrigger className="bg-card transition-all duration-200">
+                  <SelectTrigger className="bg-card">
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent className="bg-popover z-50">
@@ -234,7 +228,7 @@ export default function SubmissionForm() {
                     ))}
                   </SelectContent>
                 </Select>
-                {errors.category && <p className="text-sm text-destructive animate-fade-in">{errors.category}</p>}
+                {errors.category && <p className="text-sm text-destructive">{errors.category}</p>}
               </div>
 
               <div className="space-y-2">
@@ -243,9 +237,8 @@ export default function SubmissionForm() {
                   value={form.teacherName}
                   onChange={e => setForm(f => ({ ...f, teacherName: e.target.value }))}
                   placeholder="Enter teacher name"
-                  className="transition-all duration-200 focus:glow-primary"
                 />
-                {errors.teacherName && <p className="text-sm text-destructive animate-fade-in">{errors.teacherName}</p>}
+                {errors.teacherName && <p className="text-sm text-destructive">{errors.teacherName}</p>}
               </div>
 
               <div className="space-y-2">
@@ -254,25 +247,24 @@ export default function SubmissionForm() {
                   value={form.phoneNumber}
                   onChange={e => setForm(f => ({ ...f, phoneNumber: e.target.value }))}
                   placeholder="Enter phone number"
-                  className="transition-all duration-200 focus:glow-primary"
                 />
-                {errors.phoneNumber && <p className="text-sm text-destructive animate-fade-in">{errors.phoneNumber}</p>}
+                {errors.phoneNumber && <p className="text-sm text-destructive">{errors.phoneNumber}</p>}
               </div>
             </CardContent>
           </Card>
 
           {/* Section B: Item Registration */}
-          <Card className="hover-raise animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+          <Card>
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-secondary animate-pulse"></span>
+                <span className="h-2 w-2 rounded-full bg-secondary"></span>
                 Section B: Item Registration
               </CardTitle>
               <CardDescription>Register up to {MAX_ITEMS} creative performance items</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {form.items.map((item, idx) => (
-                <div key={idx} className="animate-fade-in-up" style={{ animationDelay: `${idx * 0.05}s` }}>
+                <div key={idx}>
                   <ItemFormCard
                     index={idx}
                     item={item}
@@ -292,7 +284,7 @@ export default function SubmissionForm() {
                   type="button" 
                   variant="outline" 
                   onClick={addItem} 
-                  className="w-full hover-raise hover-glow-primary group transition-all duration-300"
+                  className="w-full group"
                 >
                   <Plus className="h-4 w-4 mr-2 transition-transform duration-300 group-hover:rotate-90" />
                   Add Item ({form.items.length}/{MAX_ITEMS})
@@ -300,7 +292,7 @@ export default function SubmissionForm() {
               )}
 
               {form.items.length >= MAX_ITEMS && (
-                <p className="text-sm text-muted-foreground text-center animate-fade-in">
+                <p className="text-sm text-muted-foreground text-center">
                   Maximum of {MAX_ITEMS} items reached.
                 </p>
               )}
@@ -322,8 +314,7 @@ export default function SubmissionForm() {
 
           <Button 
             type="submit" 
-            className="w-full h-12 text-base font-semibold hover-raise hover-glow-primary group animate-fade-in-up" 
-            style={{ animationDelay: '0.2s' }}
+            className="w-full h-12 text-base font-semibold group" 
             disabled={submitting}
           >
             <Send className="h-4 w-4 mr-2 transition-transform duration-300 group-hover:translate-x-1" />
