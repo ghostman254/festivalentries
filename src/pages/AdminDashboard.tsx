@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { SCHOOL_CATEGORIES, ITEM_TYPES } from '@/lib/constants';
@@ -65,7 +66,7 @@ export default function AdminDashboard() {
   const [newAdminEmail, setNewAdminEmail] = useState('');
   const [newAdminPassword, setNewAdminPassword] = useState('');
   const [addingAdmin, setAddingAdmin] = useState(false);
-
+  const [deleteSchoolId, setDeleteSchoolId] = useState<string | null>(null);
   useEffect(() => {
     const checkAdminRole = async (userId: string) => {
       const { data: roleData } = await supabase
@@ -204,15 +205,18 @@ export default function AdminDashboard() {
     }
   };
 
-  const deleteSchool = async (schoolId: string) => {
+  const confirmDeleteSchool = async () => {
+    if (!deleteSchoolId) return;
+    
     // Delete items first (cascade), then school
-    const { error: itemsError } = await supabase.from('items').delete().eq('school_id', schoolId);
+    const { error: itemsError } = await supabase.from('items').delete().eq('school_id', deleteSchoolId);
     if (itemsError) {
       toast({ title: 'Error', description: 'Failed to delete items.', variant: 'destructive' });
+      setDeleteSchoolId(null);
       return;
     }
     
-    const { error } = await supabase.from('schools').delete().eq('id', schoolId);
+    const { error } = await supabase.from('schools').delete().eq('id', deleteSchoolId);
     if (error) {
       toast({ title: 'Error', description: 'Failed to delete entry.', variant: 'destructive' });
     } else {
@@ -220,6 +224,7 @@ export default function AdminDashboard() {
       setExpandedSchool(null);
       fetchData();
     }
+    setDeleteSchoolId(null);
   };
 
   const toggleSubmissions = async () => {
@@ -415,7 +420,7 @@ export default function AdminDashboard() {
                               size="sm"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                deleteSchool(school.id);
+                                setDeleteSchoolId(school.id);
                               }}
                               className="text-destructive hover:text-destructive hover:bg-destructive/10"
                             >
@@ -547,6 +552,24 @@ export default function AdminDashboard() {
             )}
           </CardContent>
         </Card>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={!!deleteSchoolId} onOpenChange={(open) => !open && setDeleteSchoolId(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Entry</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete this submission? This will permanently remove the school entry and all associated items. This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmDeleteSchool} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </main>
     </div>
   );
