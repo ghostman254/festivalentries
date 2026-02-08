@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Plus, Send, GraduationCap, AlertCircle, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ItemFormCard } from '@/components/ItemFormCard';
-import { SCHOOL_CATEGORIES, MAX_ITEMS, generateItemCode } from '@/lib/constants';
+import { TurnstileWidget } from '@/components/TurnstileWidget';
+import { SCHOOL_CATEGORIES, MAX_ITEMS } from '@/lib/constants';
 import { submissionSchema, type SubmissionFormData, type ItemFormData } from '@/lib/validation';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -21,6 +22,8 @@ export default function SubmissionForm() {
   const [submissionsOpen, setSubmissionsOpen] = useState(true);
   const [loading, setLoading] = useState(true);
   const [errors, setErrors] = useState<Record<string, any>>({});
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [captchaError, setCaptchaError] = useState(false);
 
   const [form, setForm] = useState<SubmissionFormData>({
     schoolName: '',
@@ -36,6 +39,20 @@ export default function SubmissionForm() {
         if (data) setSubmissionsOpen(data.value === 'true');
         setLoading(false);
       });
+  }, []);
+
+  const handleTurnstileVerify = useCallback((token: string) => {
+    setTurnstileToken(token);
+    setCaptchaError(false);
+  }, []);
+
+  const handleTurnstileError = useCallback(() => {
+    setTurnstileToken(null);
+    setCaptchaError(true);
+  }, []);
+
+  const handleTurnstileExpired = useCallback(() => {
+    setTurnstileToken(null);
   }, []);
 
   const addItem = () => {
@@ -55,6 +72,13 @@ export default function SubmissionForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
+
+    // Check CAPTCHA first
+    if (!turnstileToken) {
+      setCaptchaError(true);
+      toast({ title: 'Verification Required', description: 'Please complete the CAPTCHA verification.', variant: 'destructive' });
+      return;
+    }
 
     const result = submissionSchema.safeParse(form);
     if (!result.success) {
@@ -79,59 +103,53 @@ export default function SubmissionForm() {
 
     setSubmitting(true);
     try {
-      // Check for duplicate school name using secure RPC function (doesn't expose PII)
-      const { data: schoolExists, error: checkError } = await supabase
-        .rpc('check_school_exists', { school_name_param: form.schoolName.trim() });
+      // Submit via edge function with rate limiting and CAPTCHA verification
+      const { data, error } = await supabase.functions.invoke('submit-registration', {
+        body: {
+          schoolName: form.schoolName.trim(),
+          category: form.category,
+          teacherName: form.teacherName.trim(),
+          phoneNumber: form.phoneNumber.trim(),
+          items: form.items.map(item => ({
+            itemType: item.itemType,
+            language: item.language || null,
+          })),
+          turnstileToken,
+        },
+      });
 
-      if (checkError) throw checkError;
-
-      if (schoolExists) {
-        setErrors({ schoolName: 'This school is already registered in the system.' });
-        toast({ 
-          title: 'Duplicate Entry', 
-          description: 'This school is already registered. Each school can only submit once.', 
-          variant: 'destructive' 
-        });
-        setSubmitting(false);
-        return;
+      if (error) {
+        throw new Error(error.message || 'Submission failed');
       }
 
-      // Insert school
-      const { data: school, error: schoolError } = await supabase
-        .from('schools')
-        .insert({
-          school_name: form.schoolName.trim(),
-          category: form.category,
-          teacher_name: form.teacherName.trim(),
-          phone_number: form.phoneNumber.trim(),
-          total_items: form.items.length,
-        })
-        .select()
-        .single();
-
-      if (schoolError) throw schoolError;
-
-      // Generate item codes and insert items
-      const itemsToInsert = form.items.map((item, idx) => ({
-        school_id: school.id,
-        item_type: item.itemType,
-        language: item.language || null,
-        item_code: generateItemCode(form.schoolName, form.category, idx + 1),
-      }));
-
-      const { data: items, error: itemsError } = await supabase
-        .from('items')
-        .insert(itemsToInsert)
-        .select();
-
-      if (itemsError) throw itemsError;
+      if (!data.success) {
+        // Handle specific errors from the edge function
+        if (data.error?.includes('already registered')) {
+          setErrors({ schoolName: 'This school is already registered in the system.' });
+        }
+        throw new Error(data.error || 'Submission failed');
+      }
 
       // Navigate to confirmation
       navigate('/confirmation', {
-        state: { school, items },
+        state: { school: data.school, items: data.items },
       });
     } catch (err: any) {
-      toast({ title: 'Submission Failed', description: err.message || 'Something went wrong.', variant: 'destructive' });
+      // Reset CAPTCHA on error so user can try again
+      setTurnstileToken(null);
+      
+      const message = err.message || 'Something went wrong.';
+      
+      // Handle rate limiting
+      if (message.includes('Too many submissions')) {
+        toast({ 
+          title: 'Rate Limited', 
+          description: 'Too many submissions from your location. Please try again in an hour.', 
+          variant: 'destructive' 
+        });
+      } else {
+        toast({ title: 'Submission Failed', description: message, variant: 'destructive' });
+      }
     } finally {
       setSubmitting(false);
     }
@@ -274,7 +292,32 @@ export default function SubmissionForm() {
             </CardContent>
           </Card>
 
-          <Button type="submit" className="w-full h-12 text-base font-semibold" disabled={submitting}>
+          {/* CAPTCHA Verification */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Verification</CardTitle>
+              <CardDescription>Complete the verification to submit</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <TurnstileWidget
+                onVerify={handleTurnstileVerify}
+                onError={handleTurnstileError}
+                onExpired={handleTurnstileExpired}
+              />
+              {captchaError && (
+                <p className="text-sm text-destructive text-center mt-2">
+                  Please complete the CAPTCHA verification
+                </p>
+              )}
+              {turnstileToken && (
+                <p className="text-sm text-primary text-center mt-2">
+                  ✓ Verification complete
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Button type="submit" className="w-full h-12 text-base font-semibold" disabled={submitting || !turnstileToken}>
             <Send className="h-4 w-4 mr-2" />
             {submitting ? 'Submitting...' : 'Submit Registration'}
           </Button>
