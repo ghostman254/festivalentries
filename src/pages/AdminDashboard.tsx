@@ -204,6 +204,24 @@ export default function AdminDashboard() {
     }
   };
 
+  const deleteSchool = async (schoolId: string) => {
+    // Delete items first (cascade), then school
+    const { error: itemsError } = await supabase.from('items').delete().eq('school_id', schoolId);
+    if (itemsError) {
+      toast({ title: 'Error', description: 'Failed to delete items.', variant: 'destructive' });
+      return;
+    }
+    
+    const { error } = await supabase.from('schools').delete().eq('id', schoolId);
+    if (error) {
+      toast({ title: 'Error', description: 'Failed to delete entry.', variant: 'destructive' });
+    } else {
+      toast({ title: 'Entry Deleted' });
+      setExpandedSchool(null);
+      fetchData();
+    }
+  };
+
   const toggleSubmissions = async () => {
     const newVal = !submissionsOpen;
     const { error } = await supabase.from('app_settings').update({ value: String(newVal), updated_at: new Date().toISOString() }).eq('key', 'submissions_open');
@@ -360,12 +378,13 @@ export default function AdminDashboard() {
                     <TableHead>Phone</TableHead>
                     <TableHead className="text-center">Items</TableHead>
                     <TableHead>Date</TableHead>
+                    <TableHead className="w-12"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredSchools.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                      <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
                         No submissions found.
                       </TableCell>
                     </TableRow>
@@ -390,10 +409,23 @@ export default function AdminDashboard() {
                           <TableCell>{school.phone_number}</TableCell>
                           <TableCell className="text-center">{school.items.length}</TableCell>
                           <TableCell>{new Date(school.created_at).toLocaleDateString()}</TableCell>
+                          <TableCell>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                deleteSchool(school.id);
+                              }}
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
                         </TableRow>
                         {expandedSchool === school.id && (
                           <TableRow key={`${school.id}-items`}>
-                            <TableCell colSpan={7} className="bg-muted/30 p-4">
+                            <TableCell colSpan={8} className="bg-muted/30 p-4">
                               <div className="space-y-2">
                                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Registered Items</p>
                                 {school.items.map(item => (
