@@ -26,9 +26,7 @@ import heroBackground from '@/assets/hero-background.png';
 import creativeItemsBg from '@/assets/creative-items-bg.png';
 import rulesBg from '@/assets/rules-bg.png';
 import aboutDoodles from '@/assets/about-doodles.png';
-import whoCanSubmitDoodles from '@/assets/who-can-submit-doodles.png';
 import stepsDoodles from '@/assets/steps-doodles.png';
-import codesDoodles from '@/assets/codes-doodles.png';
 
 const itemIcons: Record<string, React.ReactNode> = {
   'Choral Verse': <Music className="h-6 w-6" />,
@@ -122,83 +120,80 @@ export default function Index() {
         </div>
       </section>
 
-      {/* About Section */}
+      {/* About & Who Can Submit - Combined Section */}
       <section 
         className="py-16 px-4 relative bg-cover bg-center"
         style={{ backgroundImage: `url(${aboutDoodles})` }}
       >
         <div className="absolute inset-0 bg-background/90"></div>
-        <div className="max-w-4xl mx-auto relative z-10">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl sm:text-3xl font-heading font-bold text-foreground mb-4">
-              About the Portal
-            </h2>
-            <div className="w-16 h-1 bg-secondary mx-auto rounded-full"></div>
+        <div className="max-w-4xl mx-auto relative z-10 space-y-16">
+          {/* About the Portal */}
+          <div>
+            <div className="text-center mb-8">
+              <h2 className="text-2xl sm:text-3xl font-heading font-bold text-foreground mb-4">
+                About the Portal
+              </h2>
+              <div className="w-16 h-1 bg-secondary mx-auto rounded-full"></div>
+            </div>
+            <Card className="border-0 shadow-lg">
+              <CardContent className="p-6 sm:p-8">
+                <p className="text-muted-foreground text-base sm:text-lg leading-relaxed text-center">
+                  This system was created to replace unstructured submissions and provide a long-term, 
+                  reusable solution for managing creative performance entries. All schools submit through 
+                  one official channel to ensure <strong className="text-foreground">order</strong>, <strong className="text-foreground">transparency</strong>, and <strong className="text-foreground">fairness</strong>.
+                </p>
+              </CardContent>
+            </Card>
           </div>
-          <Card className="border-0 shadow-lg">
-            <CardContent className="p-6 sm:p-8">
-              <p className="text-muted-foreground text-base sm:text-lg leading-relaxed text-center">
-                This system was created to replace unstructured submissions and provide a long-term, 
-                reusable solution for managing creative performance entries. All schools submit through 
-                one official channel to ensure <strong className="text-foreground">order</strong>, <strong className="text-foreground">transparency</strong>, and <strong className="text-foreground">fairness</strong>.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
 
-      {/* Who Can Submit */}
-      <section 
-        className="py-16 px-4 relative bg-cover bg-center"
-        style={{ backgroundImage: `url(${whoCanSubmitDoodles})` }}
-      >
-        <div className="absolute inset-0 bg-background/85"></div>
-        <div className="max-w-4xl mx-auto relative z-10">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl sm:text-3xl font-heading font-bold text-foreground mb-4">
-              Who Can Submit
-            </h2>
-            <div className="w-16 h-1 bg-secondary mx-auto rounded-full"></div>
-          </div>
-          <div className="grid sm:grid-cols-2 gap-6">
-            <Card className="border-2 border-primary/20 bg-primary/5">
-              <CardContent className="p-6 flex items-start gap-4">
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <Users className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-heading font-semibold text-foreground mb-2">School Teachers</h3>
-                  <p className="text-muted-foreground text-sm">
-                    Teachers submitting on behalf of their institutions
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="border-2 border-secondary/20 bg-secondary/5">
-              <CardContent className="p-6 flex items-start gap-4">
-                <div className="h-12 w-12 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
-                  <School className="h-6 w-6 text-secondary" />
-                </div>
-                <div>
-                  <h3 className="font-heading font-semibold text-foreground mb-2">Applicable Categories</h3>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {SCHOOL_CATEGORIES.map((cat) => (
-                      <Badge 
-                        key={cat} 
-                        variant="outline" 
-                        className="text-xs"
-                      >
-                        {cat}
-                      </Badge>
-                    ))}
+          {/* Who Can Submit */}
+          <div>
+            <div className="text-center mb-10">
+              <h2 className="text-2xl sm:text-3xl font-heading font-bold text-foreground mb-4">
+                Who Can Submit
+              </h2>
+              <div className="w-16 h-1 bg-secondary mx-auto rounded-full"></div>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-6">
+              <Card className="border-2 border-primary/20 bg-primary/5">
+                <CardContent className="p-6 flex items-start gap-4">
+                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Users className="h-6 w-6 text-primary" />
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                  <div>
+                    <h3 className="font-heading font-semibold text-foreground mb-2">School Teachers</h3>
+                    <p className="text-muted-foreground text-sm">
+                      Teachers submitting on behalf of their institutions
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="border-2 border-secondary/20 bg-secondary/5">
+                <CardContent className="p-6 flex items-start gap-4">
+                  <div className="h-12 w-12 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
+                    <School className="h-6 w-6 text-secondary" />
+                  </div>
+                  <div>
+                    <h3 className="font-heading font-semibold text-foreground mb-2">Applicable Categories</h3>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {SCHOOL_CATEGORIES.map((cat) => (
+                        <Badge 
+                          key={cat} 
+                          variant="outline" 
+                          className="text-xs"
+                        >
+                          {cat}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+            <p className="text-center text-muted-foreground mt-6 text-sm">
+              ⚠️ One submission per school only
+            </p>
           </div>
-          <p className="text-center text-muted-foreground mt-6 text-sm">
-            ⚠️ One submission per school only
-          </p>
         </div>
       </section>
 
@@ -243,79 +238,76 @@ export default function Index() {
         </div>
       </section>
 
-      {/* How to Submit */}
+      {/* How to Submit & Item Codes - Combined Section */}
       <section 
         className="py-16 px-4 relative bg-cover bg-center"
         style={{ backgroundImage: `url(${stepsDoodles})` }}
       >
         <div className="absolute inset-0 bg-background/90"></div>
-        <div className="max-w-4xl mx-auto relative z-10">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl sm:text-3xl font-heading font-bold text-foreground mb-4">
-              How to Submit Your Items
-            </h2>
-            <div className="w-16 h-1 bg-secondary mx-auto rounded-full"></div>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {steps.map(({ step, title, icon }) => (
-              <Card 
-                key={step} 
-                className="relative overflow-hidden hover:shadow-lg transition-shadow duration-200"
-              >
-                <CardContent className="p-6 text-center">
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-secondary"></div>
-                  <div className="h-14 w-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center mx-auto mb-4 text-xl font-bold shadow-lg">
-                    {step}
-                  </div>
-                  <div className="flex items-center justify-center gap-2 text-primary mb-2">
-                    {icon}
-                  </div>
-                  <p className="font-medium text-foreground text-sm">{title}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-          <Card className="mt-8 border-destructive/30 bg-destructive/5">
-            <CardContent className="p-4 text-center">
-              <p className="text-sm text-foreground font-medium">
-                ⚠️ Once submitted, entries cannot be edited.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-
-      {/* Item Codes Section */}
-      <section 
-        className="py-16 px-4 relative bg-cover bg-center"
-        style={{ backgroundImage: `url(${codesDoodles})` }}
-      >
-        <div className="absolute inset-0 bg-background/90"></div>
-        <div className="max-w-4xl mx-auto relative z-10">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl sm:text-3xl font-heading font-bold text-foreground mb-4">
-              Item Codes
-            </h2>
-            <div className="w-16 h-1 bg-secondary mx-auto rounded-full"></div>
-          </div>
-          <Card className="border-2 border-primary/20 hover:shadow-lg transition-shadow duration-200">
-            <CardContent className="p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6">
-              <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 shadow-lg">
-                <Tag className="h-10 w-10 text-primary" />
-              </div>
-              <div className="text-center sm:text-left">
-                <p className="text-muted-foreground leading-relaxed">
-                  Each registered item is assigned a <strong className="text-foreground">unique item code</strong>. 
-                  These codes will be used in a later phase to submit scripts, audio, or video files for adjudication. 
-                  Teachers are advised to <strong className="text-foreground">keep these codes safely</strong>.
+        <div className="max-w-4xl mx-auto relative z-10 space-y-16">
+          {/* How to Submit */}
+          <div>
+            <div className="text-center mb-10">
+              <h2 className="text-2xl sm:text-3xl font-heading font-bold text-foreground mb-4">
+                How to Submit Your Items
+              </h2>
+              <div className="w-16 h-1 bg-secondary mx-auto rounded-full"></div>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {steps.map(({ step, title, icon }) => (
+                <Card 
+                  key={step} 
+                  className="relative overflow-hidden hover:shadow-lg transition-shadow duration-200"
+                >
+                  <CardContent className="p-6 text-center">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-secondary"></div>
+                    <div className="h-14 w-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center mx-auto mb-4 text-xl font-bold shadow-lg">
+                      {step}
+                    </div>
+                    <div className="flex items-center justify-center gap-2 text-primary mb-2">
+                      {icon}
+                    </div>
+                    <p className="font-medium text-foreground text-sm">{title}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            <Card className="mt-8 border-destructive/30 bg-destructive/5">
+              <CardContent className="p-4 text-center">
+                <p className="text-sm text-foreground font-medium">
+                  ⚠️ Once submitted, entries cannot be edited.
                 </p>
-                <div className="mt-4 flex items-center justify-center sm:justify-start gap-2">
-                  <Badge variant="secondary" className="font-mono text-sm">SPA-PRI-01</Badge>
-                  <span className="text-xs text-muted-foreground">Example code format</span>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Item Codes */}
+          <div>
+            <div className="text-center mb-8">
+              <h2 className="text-2xl sm:text-3xl font-heading font-bold text-foreground mb-4">
+                Item Codes
+              </h2>
+              <div className="w-16 h-1 bg-secondary mx-auto rounded-full"></div>
+            </div>
+            <Card className="border-2 border-primary/20 hover:shadow-lg transition-shadow duration-200">
+              <CardContent className="p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6">
+                <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 shadow-lg">
+                  <Tag className="h-10 w-10 text-primary" />
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+                <div className="text-center sm:text-left">
+                  <p className="text-muted-foreground leading-relaxed">
+                    Each registered item is assigned a <strong className="text-foreground">unique item code</strong>. 
+                    These codes will be used in a later phase to submit scripts, audio, or video files for adjudication. 
+                    Teachers are advised to <strong className="text-foreground">keep these codes safely</strong>.
+                  </p>
+                  <div className="mt-4 flex items-center justify-center sm:justify-start gap-2">
+                    <Badge variant="secondary" className="font-mono text-sm">SPA-PRI-01</Badge>
+                    <span className="text-xs text-muted-foreground">Example code format</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </section>
 
