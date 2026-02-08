@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Plus, Send, GraduationCap, AlertCircle } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { Plus, Send, GraduationCap, AlertCircle, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -146,11 +146,17 @@ export default function SubmissionForm() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="bg-primary text-primary-foreground py-6 px-4">
-        <div className="max-w-2xl mx-auto flex items-center gap-3">
-          <GraduationCap className="h-8 w-8 flex-shrink-0" />
-          <div>
-            <h1 className="text-xl sm:text-2xl font-heading font-bold">Creative Items Registration</h1>
-            <p className="text-sm opacity-90">Register your school's creative performance items</p>
+        <div className="max-w-2xl mx-auto">
+          <Link to="/" className="inline-flex items-center gap-1 text-sm opacity-80 hover:opacity-100 mb-3 transition-opacity">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Home
+          </Link>
+          <div className="flex items-center gap-3">
+            <GraduationCap className="h-8 w-8 flex-shrink-0" />
+            <div>
+              <h1 className="text-xl sm:text-2xl font-heading font-bold">Creative Items Registration</h1>
+              <p className="text-sm opacity-90">Register your school's creative performance items</p>
+            </div>
           </div>
         </div>
       </header>
