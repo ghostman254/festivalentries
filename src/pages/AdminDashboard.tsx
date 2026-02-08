@@ -1,17 +1,20 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { GraduationCap, LogOut, Download, Filter, ChevronDown, ChevronUp } from 'lucide-react';
+import { GraduationCap, LogOut, Download, Filter, ChevronDown, ChevronUp, UserPlus, Users, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { SCHOOL_CATEGORIES, ITEM_TYPES } from '@/lib/constants';
 import type { Session } from '@supabase/supabase-js';
+import { z } from 'zod';
 
 interface SchoolRow {
   id: string;
@@ -33,6 +36,18 @@ interface ItemRow {
   created_at: string;
 }
 
+interface AdminUser {
+  user_id: string;
+  role: string;
+  created_at: string;
+  email?: string;
+}
+
+const adminEmailSchema = z.object({
+  email: z.string().trim().email('Invalid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+});
+
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -43,6 +58,13 @@ export default function AdminDashboard() {
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [filterItemType, setFilterItemType] = useState<string>('all');
   const [expandedSchool, setExpandedSchool] = useState<string | null>(null);
+  
+  // Admin management state
+  const [admins, setAdmins] = useState<AdminUser[]>([]);
+  const [showAdminDialog, setShowAdminDialog] = useState(false);
+  const [newAdminEmail, setNewAdminEmail] = useState('');
+  const [newAdminPassword, setNewAdminPassword] = useState('');
+  const [addingAdmin, setAddingAdmin] = useState(false);
 
   useEffect(() => {
     const checkAdminRole = async (userId: string) => {
@@ -97,9 +119,10 @@ export default function AdminDashboard() {
 
   const fetchData = async () => {
     setLoading(true);
-    const [schoolsRes, settingsRes] = await Promise.all([
+    const [schoolsRes, settingsRes, adminsRes] = await Promise.all([
       supabase.from('schools').select('*').order('created_at', { ascending: false }),
       supabase.from('app_settings').select('value').eq('key', 'submissions_open').maybeSingle(),
+      supabase.from('user_roles').select('*').eq('role', 'admin'),
     ]);
 
     if (schoolsRes.data) {
@@ -117,7 +140,68 @@ export default function AdminDashboard() {
     if (settingsRes.data) {
       setSubmissionsOpen(settingsRes.data.value === 'true');
     }
+
+    if (adminsRes.data) {
+      setAdmins(adminsRes.data);
+    }
+    
     setLoading(false);
+  };
+
+  const addNewAdmin = async () => {
+    const result = adminEmailSchema.safeParse({ email: newAdminEmail, password: newAdminPassword });
+    if (!result.success) {
+      toast({ title: 'Validation Error', description: result.error.issues[0].message, variant: 'destructive' });
+      return;
+    }
+
+    setAddingAdmin(true);
+    try {
+      // Create the user account
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email: newAdminEmail.trim(),
+        password: newAdminPassword,
+        options: { emailRedirectTo: `${window.location.origin}/admin` },
+      });
+
+      if (signUpError) throw signUpError;
+      if (!signUpData.user) throw new Error('Failed to create user');
+
+      // Add admin role
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .insert({ user_id: signUpData.user.id, role: 'admin' });
+
+      if (roleError) throw roleError;
+
+      toast({ title: 'Admin Added', description: `${newAdminEmail} has been added as an admin. They should check their email to confirm.` });
+      setNewAdminEmail('');
+      setNewAdminPassword('');
+      setShowAdminDialog(false);
+      fetchData();
+    } catch (err: any) {
+      const msg = err.message?.includes('already registered')
+        ? 'This email is already registered.'
+        : err.message || 'Failed to add admin.';
+      toast({ title: 'Error', description: msg, variant: 'destructive' });
+    } finally {
+      setAddingAdmin(false);
+    }
+  };
+
+  const removeAdmin = async (userId: string) => {
+    if (userId === session?.user.id) {
+      toast({ title: 'Error', description: 'You cannot remove yourself.', variant: 'destructive' });
+      return;
+    }
+
+    const { error } = await supabase.from('user_roles').delete().eq('user_id', userId);
+    if (error) {
+      toast({ title: 'Error', description: 'Failed to remove admin.', variant: 'destructive' });
+    } else {
+      toast({ title: 'Admin Removed' });
+      fetchData();
+    }
   };
 
   const toggleSubmissions = async () => {
@@ -334,6 +418,101 @@ export default function AdminDashboard() {
                 </TableBody>
               </Table>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Admin Management */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Admin Users ({admins.length})
+                </CardTitle>
+                <CardDescription>Manage administrator access</CardDescription>
+              </div>
+              <Dialog open={showAdminDialog} onOpenChange={setShowAdminDialog}>
+                <DialogTrigger asChild>
+                  <Button size="sm">
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Add Admin
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Add New Admin</DialogTitle>
+                    <DialogDescription>
+                      Create a new administrator account. They will receive an email to confirm their account.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label>Email Address</Label>
+                      <Input 
+                        type="email" 
+                        placeholder="admin@school.edu" 
+                        value={newAdminEmail}
+                        onChange={e => setNewAdminEmail(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Password</Label>
+                      <Input 
+                        type="password" 
+                        placeholder="Minimum 6 characters" 
+                        value={newAdminPassword}
+                        onChange={e => setNewAdminPassword(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setShowAdminDialog(false)}>
+                      Cancel
+                    </Button>
+                    <Button onClick={addNewAdmin} disabled={addingAdmin}>
+                      {addingAdmin ? 'Adding...' : 'Add Admin'}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {admins.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">No admins found.</p>
+            ) : (
+              <div className="space-y-2">
+                {admins.map(admin => (
+                  <div key={admin.user_id} className="flex items-center justify-between bg-muted/30 rounded-md border border-border p-3">
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Users className="h-4 w-4 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{admin.user_id.slice(0, 8)}...</p>
+                        <p className="text-xs text-muted-foreground">
+                          Added {new Date(admin.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary">{admin.role}</Badge>
+                      {admin.user_id !== session?.user.id && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => removeAdmin(admin.user_id)}
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </main>
