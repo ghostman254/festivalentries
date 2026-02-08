@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { GraduationCap, LogOut, Download, Filter, ChevronDown, ChevronUp, UserPlus, Users, Trash2 } from 'lucide-react';
+import { GraduationCap, LogOut, Download, Filter, ChevronDown, ChevronUp, UserPlus, Users, Trash2, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -58,6 +58,7 @@ export default function AdminDashboard() {
   const [submissionsOpen, setSubmissionsOpen] = useState(true);
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [filterItemType, setFilterItemType] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [expandedSchool, setExpandedSchool] = useState<string | null>(null);
   
   // Admin management state
@@ -240,11 +241,18 @@ export default function AdminDashboard() {
 
   const filteredSchools = useMemo(() => {
     return schools.filter(s => {
+      // Search filter
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        const matchesSchool = s.school_name.toLowerCase().includes(query);
+        const matchesTeacher = s.teacher_name.toLowerCase().includes(query);
+        if (!matchesSchool && !matchesTeacher) return false;
+      }
       if (filterCategory !== 'all' && s.category !== filterCategory) return false;
       if (filterItemType !== 'all' && !s.items.some(i => i.item_type === filterItemType)) return false;
       return true;
     });
-  }, [schools, filterCategory, filterItemType]);
+  }, [schools, filterCategory, filterItemType, searchQuery]);
 
   const exportCSV = () => {
     const rows: string[] = ['School Name,Category,Teacher,Phone,Item Type,Language,Item Code,Status,Date'];
@@ -330,6 +338,18 @@ export default function AdminDashboard() {
               <div className="flex items-center gap-2">
                 <Filter className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm font-medium text-foreground">Filters:</span>
+              </div>
+              <div className="space-y-1 flex-1 min-w-[200px] max-w-[300px]">
+                <Label className="text-xs">Search</Label>
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="School or teacher name..."
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    className="pl-8 h-9 bg-card"
+                  />
+                </div>
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">Category</Label>
