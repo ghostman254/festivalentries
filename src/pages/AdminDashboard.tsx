@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { GraduationCap, LogOut, Download, Filter, ChevronDown, ChevronUp, UserPlus, Users, Trash2, Search, KeyRound } from 'lucide-react';
+import { GraduationCap, LogOut, Download, Filter, ChevronDown, ChevronUp, UserPlus, Users, Trash2, Search, KeyRound, TrendingUp, Clock, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -345,6 +345,34 @@ export default function AdminDashboard() {
     navigate('/', { replace: true });
   };
 
+  const totalItems = schools.reduce((acc, s) => acc + s.items.length, 0);
+  const totalTeachers = new Set(schools.map(s => s.teacher_name.toLowerCase())).size;
+  const recentSchools = schools.filter(s => {
+    const diff = Date.now() - new Date(s.created_at).getTime();
+    return diff < 7 * 24 * 60 * 60 * 1000;
+  }).length;
+
+  // Category breakdown for bar chart
+  const categoryData = useMemo(() => {
+    return SCHOOL_CATEGORIES.map(cat => ({
+      category: cat,
+      schools: schools.filter(s => s.category === cat).length,
+      items: schools.filter(s => s.category === cat).reduce((sum, s) => sum + s.items.length, 0),
+    }));
+  }, [schools]);
+
+  // Item type breakdown (top 6)
+  const itemTypeData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    schools.forEach(s => s.items.forEach(i => {
+      counts[i.item_type] = (counts[i.item_type] || 0) + 1;
+    }));
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([name, count]) => ({ name, count }));
+  }, [schools]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -352,8 +380,6 @@ export default function AdminDashboard() {
       </div>
     );
   }
-
-  const totalItems = schools.reduce((acc, s) => acc + s.items.length, 0);
 
   return (
     <div className="min-h-screen bg-background">
@@ -415,29 +441,124 @@ export default function AdminDashboard() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-6 space-y-6">
-        {/* Stats & Controls */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
           <Card>
             <CardContent className="pt-4 pb-4">
-              <p className="text-sm text-muted-foreground">Total Schools</p>
+              <div className="flex items-center gap-2 mb-1">
+                <GraduationCap className="h-4 w-4 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">Schools</p>
+              </div>
               <p className="text-3xl font-heading font-bold text-foreground">{schools.length}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-4 pb-4">
-              <p className="text-sm text-muted-foreground">Total Items</p>
+              <div className="flex items-center gap-2 mb-1">
+                <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">Items</p>
+              </div>
               <p className="text-3xl font-heading font-bold text-foreground">{totalItems}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-4 pb-4">
+              <div className="flex items-center gap-2 mb-1">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">Teachers</p>
+              </div>
+              <p className="text-3xl font-heading font-bold text-foreground">{totalTeachers}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-4 pb-4">
+              <div className="flex items-center gap-2 mb-1">
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">This Week</p>
+              </div>
+              <p className="text-3xl font-heading font-bold text-foreground">{recentSchools}</p>
+              <p className="text-xs text-muted-foreground">new schools</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-4 pb-4 flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Submissions</p>
+                <div className="flex items-center gap-2 mb-1">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">Portal</p>
+                </div>
                 <p className="text-lg font-heading font-bold text-foreground">
                   {submissionsOpen ? 'Open' : 'Closed'}
                 </p>
               </div>
               <Switch checked={submissionsOpen} onCheckedChange={toggleSubmissions} />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Charts Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Schools & Items by Category</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {categoryData.map(d => (
+                  <div key={d.category} className="space-y-1">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">{d.category}</span>
+                      <span className="font-medium text-foreground">{d.schools} schools · {d.items} items</span>
+                    </div>
+                    <div className="flex gap-1 h-6">
+                      <div
+                        className="bg-primary rounded-sm transition-all"
+                        style={{ width: `${schools.length ? (d.schools / schools.length) * 100 : 0}%`, minWidth: d.schools ? '4px' : '0' }}
+                        title={`${d.schools} schools`}
+                      />
+                      <div
+                        className="bg-accent rounded-sm transition-all"
+                        style={{ width: `${totalItems ? (d.items / totalItems) * 100 : 0}%`, minWidth: d.items ? '4px' : '0' }}
+                        title={`${d.items} items`}
+                      />
+                    </div>
+                  </div>
+                ))}
+                <div className="flex gap-4 text-xs text-muted-foreground pt-1">
+                  <div className="flex items-center gap-1"><div className="w-3 h-3 bg-primary rounded-sm" /> Schools</div>
+                  <div className="flex items-center gap-1"><div className="w-3 h-3 bg-accent rounded-sm" /> Items</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Top Item Types</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {itemTypeData.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-4 text-center">No items yet</p>
+              ) : (
+                <div className="space-y-2">
+                  {itemTypeData.map(d => {
+                    const maxCount = itemTypeData[0]?.count || 1;
+                    return (
+                      <div key={d.name} className="space-y-1">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground truncate mr-2">{d.name}</span>
+                          <span className="font-medium text-foreground shrink-0">{d.count}</span>
+                        </div>
+                        <div className="h-5 bg-secondary rounded-sm overflow-hidden">
+                          <div
+                            className="h-full bg-primary/80 rounded-sm transition-all"
+                            style={{ width: `${(d.count / maxCount) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
