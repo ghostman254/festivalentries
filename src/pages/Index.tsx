@@ -54,7 +54,7 @@ const steps = [
 ];
 
 const rules = [
-  'Maximum of 4 items per school',
+  'Maximum of 4 items per level',
   'One submission per school',
   'All fields are mandatory',
   'Submissions close after the official deadline',
@@ -119,7 +119,7 @@ export default function Index() {
             <CountdownTimer />
           </div>
           <p className="text-sm opacity-75 pt-4">
-            Maximum of 4 items per school
+            Maximum of 4 items per level
           </p>
         </div>
       </section>
