@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Plus, Send, GraduationCap, AlertCircle, ArrowLeft, School, Search, CheckCircle2 } from 'lucide-react';
+import { Plus, Send, GraduationCap, AlertCircle, ArrowLeft, School, Search, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,6 +15,15 @@ import { useToast } from '@/hooks/use-toast';
 import { logAndSanitizeError } from '@/lib/error-utils';
 
 const emptyItem = (): ItemFormData => ({ itemType: undefined as any, language: null });
+
+// Client-side normalization mirroring the backend logic
+const STOP_WORDS = ['school', 'schools', 'academy', 'academies', 'comprehensive', 'primary', 'nursery', 'preparatory', 'prep', 'college', 'institute', 'institution', 'centre', 'center', 'learning'];
+
+function normalizeSchoolName(name: string): string {
+  const words = name.toLowerCase().trim().replace(/\s+/g, ' ').split(' ');
+  const filtered = words.filter(w => !STOP_WORDS.includes(w));
+  return filtered.length > 0 ? filtered.join(' ') : words.join(' ');
+}
 
 const CATEGORY_COLORS: Record<string, string> = {
   'Pre School': 'bg-amber-100 text-amber-800 border-amber-200',
@@ -86,6 +95,15 @@ export default function SubmissionForm() {
     phoneNumber: '',
     items: [emptyItem()],
   });
+
+  // Live duplicate detection
+  const duplicateMatch = useMemo(() => {
+    const typed = form.schoolName.trim();
+    if (typed.length < 3 || registeredSchools.length === 0) return null;
+    const normalizedTyped = normalizeSchoolName(typed);
+    if (!normalizedTyped) return null;
+    return registeredSchools.find(s => normalizeSchoolName(s.school_name) === normalizedTyped) || null;
+  }, [form.schoolName, registeredSchools]);
 
   useEffect(() => {
     supabase.from('app_settings').select('value').eq('key', 'submissions_open').maybeSingle()
@@ -265,7 +283,16 @@ export default function SubmissionForm() {
                       value={form.schoolName}
                       onChange={e => setForm(f => ({ ...f, schoolName: e.target.value }))}
                       placeholder="Enter school name"
+                      className={duplicateMatch ? 'border-amber-500 focus-visible:ring-amber-500' : ''}
                     />
+                    {duplicateMatch && (
+                      <div className="flex items-start gap-2 p-2.5 rounded-md bg-amber-50 border border-amber-200 text-amber-800">
+                        <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+                        <p className="text-sm">
+                          This name closely matches <span className="font-semibold">"{duplicateMatch.school_name}"</span> ({duplicateMatch.category}), which is already registered. Duplicate submissions will be rejected.
+                        </p>
+                      </div>
+                    )}
                     {errors.schoolName && <p className="text-sm text-destructive">{errors.schoolName}</p>}
                   </div>
 
