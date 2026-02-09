@@ -220,9 +220,12 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Normalize school name: lowercase, trim, collapse whitespace
+    const normalizedSchoolName = body.schoolName.trim().replace(/\s+/g, ' ');
+
     // Check for duplicate school name
     const { data: existsData, error: existsError } = await supabase
-      .rpc('check_school_exists', { school_name_param: body.schoolName.trim() });
+      .rpc('check_school_exists', { school_name_param: normalizedSchoolName });
 
     if (existsError) {
       console.error('Error checking school existence:', existsError);
