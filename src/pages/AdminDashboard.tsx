@@ -293,8 +293,14 @@ export default function AdminDashboard() {
     }
     setDeleteSchoolId(null);
   };
+  const currentUserRole = admins.find(a => a.user_id === session?.user.id)?.role;
+  const isSuperAdmin = currentUserRole === 'super_admin';
 
   const toggleSubmissions = async () => {
+    if (!isSuperAdmin) {
+      toast({ title: 'Permission Denied', description: 'Only super admins can toggle the submissions portal.', variant: 'destructive' });
+      return;
+    }
     const newVal = !submissionsOpen;
     const { error } = await supabase.from('app_settings').update({ value: String(newVal), updated_at: new Date().toISOString() }).eq('key', 'submissions_open');
     if (error) {
@@ -491,7 +497,10 @@ export default function AdminDashboard() {
                   {submissionsOpen ? 'Open' : 'Closed'}
                 </p>
               </div>
-              <Switch checked={submissionsOpen} onCheckedChange={toggleSubmissions} />
+              <div className="flex flex-col items-end gap-1">
+                <Switch checked={submissionsOpen} onCheckedChange={toggleSubmissions} disabled={!isSuperAdmin} />
+                {!isSuperAdmin && <p className="text-xs text-muted-foreground">Super admin only</p>}
+              </div>
             </CardContent>
           </Card>
         </div>
