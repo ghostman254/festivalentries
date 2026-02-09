@@ -134,6 +134,10 @@ export default function SubmissionForm() {
         throw new Error(data.error || 'Submission failed');
       }
 
+      // Refresh registered schools list
+      const { data: updatedSchools } = await supabase.rpc('get_registered_school_names');
+      if (updatedSchools) setRegisteredSchools(updatedSchools);
+
       // Navigate to confirmation
       navigate('/confirmation', {
         state: { school: data.school, items: data.items },
