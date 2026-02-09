@@ -22,6 +22,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ITEM_TYPES, SCHOOL_CATEGORIES } from '@/lib/constants';
+import CountdownTimer from '@/components/CountdownTimer';
 import heroBackground from '@/assets/hero-background.png';
 import creativeItemsBg from '@/assets/creative-items-bg.png';
 import rulesBg from '@/assets/rules-bg.png';
@@ -114,7 +115,10 @@ export default function Index() {
               </Button>
             </Link>
           </div>
-          <p className="text-sm opacity-75 pt-2">
+          <div className="pt-6">
+            <CountdownTimer />
+          </div>
+          <p className="text-sm opacity-75 pt-4">
             Maximum of 4 items per school
           </p>
         </div>
