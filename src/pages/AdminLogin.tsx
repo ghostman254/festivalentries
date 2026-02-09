@@ -25,17 +25,12 @@ export default function AdminLogin() {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session) {
-        // Check if user has admin role
-        const { data: roleData } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', session.user.id)
-          .single();
+        // Use the is_admin RPC which handles both admin and super_admin roles
+        const { data: isAdmin } = await supabase.rpc('is_admin', { check_user_id: session.user.id });
         
-        if (roleData?.role === 'admin' || roleData?.role === 'super_admin') {
+        if (isAdmin) {
           navigate('/admin', { replace: true });
         } else {
-          // User is authenticated but not an admin
           toast({ 
             title: 'Access Denied', 
             description: 'You do not have administrator privileges.', 
@@ -48,13 +43,9 @@ export default function AdminLogin() {
 
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session) {
-        const { data: roleData } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', session.user.id)
-          .single();
+        const { data: isAdmin } = await supabase.rpc('is_admin', { check_user_id: session.user.id });
         
-        if (roleData?.role === 'admin' || roleData?.role === 'super_admin') {
+        if (isAdmin) {
           navigate('/admin', { replace: true });
         }
       }
