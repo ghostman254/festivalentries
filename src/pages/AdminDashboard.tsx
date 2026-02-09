@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { GraduationCap, LogOut, Download, Filter, ChevronDown, ChevronUp, UserPlus, Users, Trash2, Search } from 'lucide-react';
+import { GraduationCap, LogOut, Download, Filter, ChevronDown, ChevronUp, UserPlus, Users, Trash2, Search, KeyRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -50,6 +50,14 @@ const adminEmailSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
+const passwordChangeSchema = z.object({
+  newPassword: z.string().min(6, 'Password must be at least 6 characters'),
+  confirmPassword: z.string().min(6, 'Password must be at least 6 characters'),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
+
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -69,6 +77,12 @@ export default function AdminDashboard() {
   const [newAdminPassword, setNewAdminPassword] = useState('');
   const [addingAdmin, setAddingAdmin] = useState(false);
   const [deleteSchoolId, setDeleteSchoolId] = useState<string | null>(null);
+  
+  // Password change state
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [changingPassword, setChangingPassword] = useState(false);
   useEffect(() => {
     const checkAdminRole = async (userId: string) => {
       const { data: roleData } = await supabase
@@ -170,14 +184,44 @@ export default function AdminDashboard() {
       if (signUpError) throw signUpError;
       if (!signUpData.user) throw new Error('Failed to create user');
 
-      // Add admin role
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .insert({ user_id: signUpData.user.id, role: 'admin' });
+      // Check if this is a repeated signup (user already exists)
+      // signUp returns the existing user but with identities array empty for repeated signups
+      const isExistingUser = signUpData.user.identities?.length === 0;
+      
+      if (isExistingUser) {
+        // User already exists - check if they already have admin role
+        const { data: existingRole } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', signUpData.user.id)
+          .eq('role', 'admin')
+          .maybeSingle();
+        
+        if (existingRole) {
+          toast({ title: 'Already Admin', description: 'This user is already an administrator.', variant: 'destructive' });
+          setAddingAdmin(false);
+          return;
+        }
+        
+        // Add admin role to existing user
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert({ user_id: signUpData.user.id, role: 'admin' });
 
-      if (roleError) throw roleError;
+        if (roleError) throw roleError;
 
-      toast({ title: 'Admin Added', description: `${newAdminEmail} has been added as an admin. They should check their email to confirm.` });
+        toast({ title: 'Admin Added', description: `${newAdminEmail} has been granted admin access. They can login with their existing password.` });
+      } else {
+        // New user - add admin role
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert({ user_id: signUpData.user.id, role: 'admin' });
+
+        if (roleError) throw roleError;
+
+        toast({ title: 'Admin Added', description: `${newAdminEmail} has been added as an admin. They should check their email to confirm.` });
+      }
+      
       setNewAdminEmail('');
       setNewAdminPassword('');
       setShowAdminDialog(false);
@@ -201,6 +245,30 @@ export default function AdminDashboard() {
     } else {
       toast({ title: 'Admin Removed' });
       fetchData();
+    }
+  };
+
+  const changePassword = async () => {
+    const result = passwordChangeSchema.safeParse({ newPassword, confirmPassword });
+    if (!result.success) {
+      toast({ title: 'Validation Error', description: result.error.issues[0].message, variant: 'destructive' });
+      return;
+    }
+
+    setChangingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      
+      if (error) throw error;
+      
+      toast({ title: 'Password Updated', description: 'Your password has been changed successfully.' });
+      setNewPassword('');
+      setConfirmPassword('');
+      setShowPasswordDialog(false);
+    } catch (err: unknown) {
+      toast({ title: 'Error', description: logAndSanitizeError(err, 'auth', 'Password change error'), variant: 'destructive' });
+    } finally {
+      setChangingPassword(false);
     }
   };
 
@@ -295,9 +363,54 @@ export default function AdminDashboard() {
             <GraduationCap className="h-7 w-7" />
             <h1 className="text-lg sm:text-xl font-heading font-bold">Admin Dashboard</h1>
           </div>
-          <Button variant="ghost" size="sm" onClick={handleLogout} className="text-primary-foreground hover:text-primary-foreground/80 hover:bg-primary-foreground/10">
-            <LogOut className="h-4 w-4 mr-2" /> Logout
-          </Button>
+          <div className="flex items-center gap-2">
+            <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="sm" className="text-primary-foreground hover:text-primary-foreground/80 hover:bg-primary-foreground/10">
+                  <KeyRound className="h-4 w-4 mr-2" /> Change Password
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Change Password</DialogTitle>
+                  <DialogDescription>
+                    Enter your new password below.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label>New Password</Label>
+                    <Input 
+                      type="password" 
+                      placeholder="Minimum 6 characters" 
+                      value={newPassword}
+                      onChange={e => setNewPassword(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Confirm Password</Label>
+                    <Input 
+                      type="password" 
+                      placeholder="Re-enter your password" 
+                      value={confirmPassword}
+                      onChange={e => setConfirmPassword(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setShowPasswordDialog(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={changePassword} disabled={changingPassword}>
+                    {changingPassword ? 'Updating...' : 'Update Password'}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+            <Button variant="ghost" size="sm" onClick={handleLogout} className="text-primary-foreground hover:text-primary-foreground/80 hover:bg-primary-foreground/10">
+              <LogOut className="h-4 w-4 mr-2" /> Logout
+            </Button>
+          </div>
         </div>
       </header>
 
