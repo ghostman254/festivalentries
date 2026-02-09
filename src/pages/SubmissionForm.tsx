@@ -202,7 +202,44 @@ export default function SubmissionForm() {
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-8">
+      <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+        {/* Registered Schools - shown at top */}
+        {registeredSchools.length > 0 && (
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <School className="h-5 w-5 text-primary" />
+                Already Registered Schools ({registeredSchools.length})
+              </CardTitle>
+              <CardDescription>Check if your school is already registered before submitting.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search schools..."
+                  value={schoolSearch}
+                  onChange={e => setSchoolSearch(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+              <div className="max-h-48 overflow-y-auto space-y-1.5 rounded-md border p-2">
+                {registeredSchools
+                  .filter(s => s.school_name.toLowerCase().includes(schoolSearch.toLowerCase()))
+                  .map((s, i) => (
+                    <div key={i} className="flex items-center justify-between py-1.5 px-2 rounded hover:bg-muted/50 text-sm">
+                      <span className="font-medium text-foreground">{s.school_name}</span>
+                      <Badge variant="secondary" className="text-xs">{s.category}</Badge>
+                    </div>
+                  ))}
+                {registeredSchools.filter(s => s.school_name.toLowerCase().includes(schoolSearch.toLowerCase())).length === 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-2">No matching schools found.</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Section A: School Details */}
           <Card>
@@ -310,42 +347,7 @@ export default function SubmissionForm() {
             </CardContent>
           </Card>
 
-          {/* Registered Schools */}
-          {registeredSchools.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <School className="h-5 w-5 text-primary" />
-                  Already Registered Schools ({registeredSchools.length})
-                </CardTitle>
-                <CardDescription>These schools have already submitted. Please check before registering.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search schools..."
-                    value={schoolSearch}
-                    onChange={e => setSchoolSearch(e.target.value)}
-                    className="pl-9"
-                  />
-                </div>
-                <div className="max-h-48 overflow-y-auto space-y-1.5 rounded-md border p-2">
-                  {registeredSchools
-                    .filter(s => s.school_name.toLowerCase().includes(schoolSearch.toLowerCase()))
-                    .map((s, i) => (
-                      <div key={i} className="flex items-center justify-between py-1.5 px-2 rounded hover:bg-muted/50 text-sm">
-                        <span className="font-medium text-foreground">{s.school_name}</span>
-                        <Badge variant="secondary" className="text-xs">{s.category}</Badge>
-                      </div>
-                    ))}
-                  {registeredSchools.filter(s => s.school_name.toLowerCase().includes(schoolSearch.toLowerCase())).length === 0 && (
-                    <p className="text-sm text-muted-foreground text-center py-2">No matching schools found.</p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+
 
           {/* Honeypot field - hidden from users, catches bots */}
           <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0, overflow: 'hidden' }}>
