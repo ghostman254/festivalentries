@@ -147,6 +147,7 @@ export type Database = {
         }[]
       }
       is_admin: { Args: { check_user_id: string }; Returns: boolean }
+      is_super_admin: { Args: { check_user_id: string }; Returns: boolean }
       normalize_school_name: { Args: { name: string }; Returns: string }
     }
     Enums: {

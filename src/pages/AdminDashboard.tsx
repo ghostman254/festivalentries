@@ -786,8 +786,10 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant="secondary">{admin.role}</Badge>
-                      {admin.user_id !== session?.user.id && (
+                      <Badge variant={admin.role === 'super_admin' ? 'default' : 'secondary'}>
+                        {admin.role === 'super_admin' ? '👑 Super Admin' : admin.role}
+                      </Badge>
+                      {admin.user_id !== session?.user.id && admin.role !== 'super_admin' && (
                         <Button 
                           variant="ghost" 
                           size="sm" 
