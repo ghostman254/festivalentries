@@ -139,6 +139,13 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_registered_school_names: {
+        Args: never
+        Returns: {
+          category: string
+          school_name: string
+        }[]
+      }
       is_admin: { Args: { check_user_id: string }; Returns: boolean }
       normalize_school_name: { Args: { name: string }; Returns: string }
     }
