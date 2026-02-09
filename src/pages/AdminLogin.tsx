@@ -32,7 +32,7 @@ export default function AdminLogin() {
           .eq('user_id', session.user.id)
           .single();
         
-        if (roleData?.role === 'admin') {
+        if (roleData?.role === 'admin' || roleData?.role === 'super_admin') {
           navigate('/admin', { replace: true });
         } else {
           // User is authenticated but not an admin
@@ -54,7 +54,7 @@ export default function AdminLogin() {
           .eq('user_id', session.user.id)
           .single();
         
-        if (roleData?.role === 'admin') {
+        if (roleData?.role === 'admin' || roleData?.role === 'super_admin') {
           navigate('/admin', { replace: true });
         }
       }
