@@ -13,7 +13,7 @@ export interface ItemRegulation {
  * - Pre School → Pre-Primary (from regulation tables)
  * - Lower Grade → Primary (from regulation tables)
  * - Primary → Primary (from regulation tables)
- * - Junior Academy → Junior School (from regulation tables)
+ * - Junior School → Junior School (from regulation tables)
  */
 export const CATEGORY_REGULATIONS: Record<string, ItemRegulation[]> = {
   'Pre School': [
@@ -50,7 +50,7 @@ export const CATEGORY_REGULATIONS: Record<string, ItemRegulation[]> = {
     { itemType: 'Documentary', maxTime: '10 min', maxCast: null },
     { itemType: 'Advert', maxTime: '5 min', maxCast: null },
   ],
-  'Junior Academy': [
+  'Junior School': [
     { itemType: 'Play', maxTime: '35 min', maxCast: 25 },
     { itemType: 'Solo Verse', maxTime: '6 min', maxCast: 2 },
     { itemType: 'Choral Verse', maxTime: '6 min', maxCast: 18 },

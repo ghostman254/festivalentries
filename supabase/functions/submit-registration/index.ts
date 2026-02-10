@@ -11,7 +11,7 @@ const RATE_LIMIT_WINDOW = 60 * 60 * 1000; // 1 hour
 const MAX_REQUESTS_PER_WINDOW = 5; // 5 submissions per hour per IP
 
 // Validation constants
-const SCHOOL_CATEGORIES = ['Pre School', 'Lower Grade', 'Primary', 'Junior Academy'];
+const SCHOOL_CATEGORIES = ['Pre School', 'Lower Grade', 'Primary', 'Junior School'];
 const ITEM_TYPES = [
   'Choral Verse', 'Play', 'Spoken Word', 'Solo Verse', 'Modern Dance',
   'Comedy', 'Live Broadcast', 'Podcast', 'Singing Games', 'Narratives',
@@ -22,7 +22,7 @@ const CATEGORY_ABBREVIATIONS: Record<string, string> = {
   'Pre School': 'PRE',
   'Lower Grade': 'LGR',
   'Primary': 'PRI',
-  'Junior Academy': 'JAC',
+  'Junior School': 'JSC',
 };
 
 function generateSchoolAbbreviation(schoolName: string): string {
