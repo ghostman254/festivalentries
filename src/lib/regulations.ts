@@ -23,6 +23,8 @@ export const CATEGORY_REGULATIONS: Record<string, ItemRegulation[]> = {
     { itemType: 'Podcast', maxTime: '10 min', maxCast: null },
     { itemType: 'Documentary', maxTime: '10 min', maxCast: null },
     { itemType: 'Advert', maxTime: '5 min', maxCast: null },
+    { itemType: 'Features', maxTime: '10 min', maxCast: null },
+    { itemType: 'Screen Solo', maxTime: '5 min', maxCast: 2 },
   ],
   'Lower Grade': [
     { itemType: 'Play', maxTime: '15 min', maxCast: 20 },
@@ -36,6 +38,8 @@ export const CATEGORY_REGULATIONS: Record<string, ItemRegulation[]> = {
     { itemType: 'Podcast', maxTime: '10 min', maxCast: null },
     { itemType: 'Documentary', maxTime: '10 min', maxCast: null },
     { itemType: 'Advert', maxTime: '5 min', maxCast: null },
+    { itemType: 'Features', maxTime: '10 min', maxCast: null },
+    { itemType: 'Screen Solo', maxTime: '5 min', maxCast: 2 },
   ],
   'Primary': [
     { itemType: 'Play', maxTime: '15 min', maxCast: 20 },
@@ -49,6 +53,8 @@ export const CATEGORY_REGULATIONS: Record<string, ItemRegulation[]> = {
     { itemType: 'Podcast', maxTime: '10 min', maxCast: null },
     { itemType: 'Documentary', maxTime: '10 min', maxCast: null },
     { itemType: 'Advert', maxTime: '5 min', maxCast: null },
+    { itemType: 'Features', maxTime: '10 min', maxCast: null },
+    { itemType: 'Screen Solo', maxTime: '5 min', maxCast: 2 },
   ],
   'Junior School': [
     { itemType: 'Play', maxTime: '35 min', maxCast: 25 },
@@ -64,6 +70,8 @@ export const CATEGORY_REGULATIONS: Record<string, ItemRegulation[]> = {
     { itemType: 'Podcast', maxTime: '10 min', maxCast: null },
     { itemType: 'Documentary', maxTime: '10 min', maxCast: null },
     { itemType: 'Advert', maxTime: '5 min', maxCast: null },
+    { itemType: 'Features', maxTime: '10 min', maxCast: null },
+    { itemType: 'Screen Solo', maxTime: '5 min', maxCast: 2 },
   ],
 };
 
