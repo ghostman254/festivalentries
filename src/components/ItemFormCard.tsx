@@ -150,13 +150,14 @@ export function ItemFormCard({ index, item, onChange, onRemove, canRemove, error
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
               {displayItems.map((type) => {
                 const isSelected = item.itemType === type;
+                const reg = category ? getItemRegulation(category, type) : undefined;
                 return (
                   <button
                     key={type}
                     type="button"
                     onClick={() => handleItemSelect(type)}
                     className={cn(
-                      "relative flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 transition-all duration-200 text-center",
+                      "relative flex flex-col items-center gap-1 p-3 rounded-lg border-2 transition-all duration-200 text-center",
                       isSelected
                         ? "border-primary bg-primary/10 text-primary shadow-sm"
                         : "border-border bg-background hover:border-primary/50 hover:bg-muted/50 text-muted-foreground hover:text-foreground"
@@ -179,6 +180,18 @@ export function ItemFormCard({ index, item, onChange, onRemove, canRemove, error
                     )}>
                       {type}
                     </span>
+                    {reg && (
+                      <div className="flex items-center gap-1.5 mt-1 flex-wrap justify-center">
+                        <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                          <Clock className="h-2.5 w-2.5" />{reg.maxTime}
+                        </span>
+                        {reg.maxCast !== null && (
+                          <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                            <Users className="h-2.5 w-2.5" />{reg.maxCast}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </button>
                 );
               })}
