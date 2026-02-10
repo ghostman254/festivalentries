@@ -20,6 +20,9 @@ export const CATEGORY_REGULATIONS: Record<string, ItemRegulation[]> = {
     { itemType: 'Solo Verse', maxTime: '4 min', maxCast: 2 },
     { itemType: 'Choral Verse', maxTime: '4 min', maxCast: 16 },
     { itemType: 'Singing Games', maxTime: '5 min', maxCast: 20 },
+    { itemType: 'Podcast', maxTime: '10 min', maxCast: null },
+    { itemType: 'Documentary', maxTime: '10 min', maxCast: null },
+    { itemType: 'Advert', maxTime: '5 min', maxCast: null },
   ],
   'Lower Grade': [
     { itemType: 'Play', maxTime: '15 min', maxCast: 20 },
@@ -30,6 +33,9 @@ export const CATEGORY_REGULATIONS: Record<string, ItemRegulation[]> = {
     { itemType: 'Cultural Creative Dance', maxTime: '7 min', maxCast: 30 },
     { itemType: 'Live Broadcast', maxTime: '5 min', maxCast: 2 },
     { itemType: 'Video Song', maxTime: '10 min', maxCast: null },
+    { itemType: 'Podcast', maxTime: '10 min', maxCast: null },
+    { itemType: 'Documentary', maxTime: '10 min', maxCast: null },
+    { itemType: 'Advert', maxTime: '5 min', maxCast: null },
   ],
   'Primary': [
     { itemType: 'Play', maxTime: '15 min', maxCast: 20 },
@@ -40,6 +46,9 @@ export const CATEGORY_REGULATIONS: Record<string, ItemRegulation[]> = {
     { itemType: 'Cultural Creative Dance', maxTime: '7 min', maxCast: 30 },
     { itemType: 'Live Broadcast', maxTime: '5 min', maxCast: 2 },
     { itemType: 'Video Song', maxTime: '10 min', maxCast: null },
+    { itemType: 'Podcast', maxTime: '10 min', maxCast: null },
+    { itemType: 'Documentary', maxTime: '10 min', maxCast: null },
+    { itemType: 'Advert', maxTime: '5 min', maxCast: null },
   ],
   'Junior Academy': [
     { itemType: 'Play', maxTime: '35 min', maxCast: 25 },
@@ -52,6 +61,9 @@ export const CATEGORY_REGULATIONS: Record<string, ItemRegulation[]> = {
     { itemType: 'Comedy', maxTime: '5 min', maxCast: 2 },
     { itemType: 'Live Broadcast', maxTime: '5 min', maxCast: 2 },
     { itemType: 'Video Song', maxTime: '10 min', maxCast: null },
+    { itemType: 'Podcast', maxTime: '10 min', maxCast: null },
+    { itemType: 'Documentary', maxTime: '10 min', maxCast: null },
+    { itemType: 'Advert', maxTime: '5 min', maxCast: null },
   ],
 };
 
