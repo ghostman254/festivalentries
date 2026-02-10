@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { Trash2, Music, Theater, Mic2, Video, Radio, Podcast, Sparkles, FileText, Check, ChevronDown, Pencil } from 'lucide-react';
+import { Trash2, Music, Theater, Mic2, Video, Radio, Podcast, Sparkles, FileText, Check, ChevronDown, Pencil, Clock, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { ITEM_TYPES, LANGUAGES } from '@/lib/constants';
+import { getItemRegulation } from '@/lib/regulations';
 import type { ItemFormData } from '@/lib/validation';
 import { cn } from '@/lib/utils';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -31,12 +33,16 @@ interface ItemFormCardProps {
   onRemove: () => void;
   canRemove: boolean;
   errors?: Record<string, string>;
+  allowedItems?: string[];
+  category?: string;
 }
 
-export function ItemFormCard({ index, item, onChange, onRemove, canRemove, errors }: ItemFormCardProps) {
+export function ItemFormCard({ index, item, onChange, onRemove, canRemove, errors, allowedItems, category }: ItemFormCardProps) {
   const [isOpen, setIsOpen] = useState(!item.itemType);
   const showLanguage = item.itemType === 'Play';
   const hasSelection = !!item.itemType;
+  const displayItems = allowedItems && allowedItems.length > 0 ? ITEM_TYPES.filter(t => allowedItems.includes(t)) : ITEM_TYPES;
+  const regulation = category && item.itemType ? getItemRegulation(category, item.itemType) : undefined;
 
   const handleItemSelect = (type: string) => {
     const newItem: ItemFormData = { ...item, itemType: type as any };
@@ -90,6 +96,18 @@ export function ItemFormCard({ index, item, onChange, onRemove, canRemove, error
                   {item.language && (
                     <p className="text-xs text-muted-foreground">Language: {item.language}</p>
                   )}
+                  {regulation && (
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Clock className="h-3 w-3" /> {regulation.maxTime}
+                      </span>
+                      {regulation.maxCast !== null && (
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Users className="h-3 w-3" /> Max {regulation.maxCast}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <Check className="h-4 w-4 text-primary ml-1" />
               </div>
@@ -130,7 +148,7 @@ export function ItemFormCard({ index, item, onChange, onRemove, canRemove, error
               )}
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-              {ITEM_TYPES.map((type) => {
+              {displayItems.map((type) => {
                 const isSelected = item.itemType === type;
                 return (
                   <button

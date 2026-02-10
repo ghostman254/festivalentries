@@ -28,6 +28,7 @@ import creativeItemsBg from '@/assets/creative-items-bg.png';
 import rulesBg from '@/assets/rules-bg.png';
 import aboutDoodles from '@/assets/about-doodles.png';
 import stepsDoodles from '@/assets/steps-doodles.png';
+import RegulationsSection from '@/components/RegulationsSection';
 
 const itemIcons: Record<string, React.ReactNode> = {
   'Choral Verse': <Music className="h-6 w-6" />,
@@ -314,6 +315,9 @@ export default function Index() {
           </div>
         </div>
       </section>
+
+      {/* Performance Regulations */}
+      <RegulationsSection />
 
       {/* Rules Section */}
       <section 

@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { ItemFormCard } from '@/components/ItemFormCard';
 import { SCHOOL_CATEGORIES, MAX_ITEMS } from '@/lib/constants';
+import { getAllowedItemTypes } from '@/lib/regulations';
 import { submissionSchema, type SubmissionFormData, type ItemFormData } from '@/lib/validation';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -300,7 +301,17 @@ export default function SubmissionForm() {
                     <Label>School Category *</Label>
                     <Select
                       value={form.category || ''}
-                      onValueChange={val => setForm(f => ({ ...f, category: val as any }))}
+                      onValueChange={val => {
+                        const newCategory = val as any;
+                        const allowed = getAllowedItemTypes(newCategory);
+                        // Reset items that aren't allowed in the new category
+                        const resetItems = form.items.map(it => 
+                          it.itemType && !allowed.includes(it.itemType) 
+                            ? { itemType: undefined as any, language: null } 
+                            : it
+                        );
+                        setForm(f => ({ ...f, category: newCategory, items: resetItems }));
+                      }}
                     >
                       <SelectTrigger className="bg-card">
                         <SelectValue placeholder="Select category" />
@@ -343,7 +354,10 @@ export default function SubmissionForm() {
                     <span className="h-2 w-2 rounded-full bg-secondary"></span>
                     Section B: Item Registration
                   </CardTitle>
-                  <CardDescription>Register up to {MAX_ITEMS} creative performance items</CardDescription>
+                  <CardDescription>
+                    Register up to {MAX_ITEMS} creative performance items
+                    {!form.category && <span className="block text-xs mt-1 text-amber-600">Please select a school category first to see available items.</span>}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {form.items.map((item, idx) => (
@@ -354,6 +368,8 @@ export default function SubmissionForm() {
                         onChange={(updated) => updateItem(idx, updated)}
                         onRemove={() => removeItem(idx)}
                         canRemove={form.items.length > 1}
+                        allowedItems={form.category ? getAllowedItemTypes(form.category) : undefined}
+                        category={form.category}
                         errors={{
                           itemType: errors[`items.${idx}.itemType`],
                           language: errors[`items.${idx}.language`],
