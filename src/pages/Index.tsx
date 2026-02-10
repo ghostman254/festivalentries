@@ -100,7 +100,7 @@ export default function Index() {
             Official Submission Platform
           </Badge>
           <h1 className="text-3xl sm:text-5xl font-heading font-bold leading-tight">
-            Creative Arts Submission Portal
+            Drama Festival Submission Portal - Isinya
           </h1>
           <p className="text-lg sm:text-xl opacity-90 max-w-2xl mx-auto">
             The official platform for registering school creative performance items
