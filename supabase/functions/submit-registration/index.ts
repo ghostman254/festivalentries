@@ -122,8 +122,8 @@ function validateSubmission(data: SubmissionRequest): { valid: boolean; error?: 
   }
 
   // Items
-  if (!Array.isArray(data.items) || data.items.length < 1 || data.items.length > 4) {
-    return { valid: false, error: 'You must submit between 1 and 4 items' };
+  if (!Array.isArray(data.items) || data.items.length < 1 || data.items.length > 20) {
+    return { valid: false, error: 'You must submit between 1 and 20 items' };
   }
 
   for (let i = 0; i < data.items.length; i++) {

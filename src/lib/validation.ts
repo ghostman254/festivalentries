@@ -12,7 +12,7 @@ export const submissionSchema = z.object({
   teacherName: z.string().trim().min(1, 'Teacher name is required').max(100, 'Teacher name too long'),
   phoneNumber: z.string().trim().min(1, 'Phone number is required').max(20, 'Phone number too long')
     .regex(/^[\d\s\+\-\(\)]+$/, 'Invalid phone number format'),
-  items: z.array(itemSchema).min(1, 'At least one item is required').max(4, 'Maximum 4 items allowed'),
+  items: z.array(itemSchema).min(1, 'At least one item is required').max(20, 'Maximum 20 items allowed'),
 });
 
 export type SubmissionFormData = z.infer<typeof submissionSchema>;
