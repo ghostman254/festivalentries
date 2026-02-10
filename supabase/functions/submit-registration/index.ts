@@ -15,7 +15,8 @@ const SCHOOL_CATEGORIES = ['Pre School', 'Lower Grade', 'Primary', 'Junior Schoo
 const ITEM_TYPES = [
   'Choral Verse', 'Play', 'Spoken Word', 'Solo Verse', 'Modern Dance',
   'Comedy', 'Live Broadcast', 'Podcast', 'Singing Games', 'Narratives',
-  'Cultural Creative Dance', 'Video Song', 'Documentary', 'Advert'
+  'Cultural Creative Dance', 'Video Song', 'Documentary', 'Advert',
+  'Features', 'Screen Solo'
 ];
 const LANGUAGES = ['English', 'French', 'German'];
 const CATEGORY_ABBREVIATIONS: Record<string, string> = {

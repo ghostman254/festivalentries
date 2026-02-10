@@ -172,6 +172,8 @@ export type Database = {
         | "Video Song"
         | "Documentary"
         | "Advert"
+        | "Features"
+        | "Screen Solo"
       school_category:
         | "Pre School"
         | "Lower Grade"
@@ -326,6 +328,8 @@ export const Constants = {
         "Video Song",
         "Documentary",
         "Advert",
+        "Features",
+        "Screen Solo",
       ],
       school_category: [
         "Pre School",

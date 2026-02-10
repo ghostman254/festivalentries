@@ -20,6 +20,8 @@ export const ITEM_TYPES = [
   'Video Song',
   'Documentary',
   'Advert',
+  'Features',
+  'Screen Solo',
 ] as const;
 
 export const LANGUAGES = ['English', 'French', 'German'] as const;
