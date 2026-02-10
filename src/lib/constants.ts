@@ -24,7 +24,7 @@ export const ITEM_TYPES = [
 
 export const LANGUAGES = ['English', 'French', 'German'] as const;
 
-export const MAX_ITEMS = 4;
+export const MAX_ITEMS = 20;
 
 export const CATEGORY_ABBREVIATIONS: Record<string, string> = {
   'Pre School': 'PRE',
