@@ -2,7 +2,7 @@ export const SCHOOL_CATEGORIES = [
   'Pre School',
   'Lower Grade',
   'Primary',
-  'Junior Academy',
+  'Junior School',
 ] as const;
 
 export const ITEM_TYPES = [
@@ -30,7 +30,7 @@ export const CATEGORY_ABBREVIATIONS: Record<string, string> = {
   'Pre School': 'PRE',
   'Lower Grade': 'LGR',
   'Primary': 'PRI',
-  'Junior Academy': 'JAC',
+  'Junior School': 'JSC',
 };
 
 /**

@@ -176,7 +176,7 @@ export type Database = {
         | "Pre School"
         | "Lower Grade"
         | "Primary"
-        | "Junior Academy"
+        | "Junior School"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -331,7 +331,7 @@ export const Constants = {
         "Pre School",
         "Lower Grade",
         "Primary",
-        "Junior Academy",
+        "Junior School",
       ],
     },
   },
