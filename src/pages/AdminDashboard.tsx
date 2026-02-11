@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GraduationCap, LogOut, Download, Filter, ChevronDown, ChevronUp, UserPlus, Users, Trash2, Search, KeyRound, TrendingUp, Clock, BarChart3 } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -361,13 +362,14 @@ export default function AdminDashboard() {
   // Category breakdown for bar chart
   const categoryData = useMemo(() => {
     return SCHOOL_CATEGORIES.map(cat => ({
-      category: cat,
+      category: cat.replace(' ', '\n'),
+      categoryFull: cat,
       schools: schools.filter(s => s.category === cat).length,
       items: schools.filter(s => s.category === cat).reduce((sum, s) => sum + s.items.length, 0),
     }));
   }, [schools]);
 
-  // Item type breakdown (top 6)
+  // Item type breakdown (ALL types)
   const itemTypeData = useMemo(() => {
     const counts: Record<string, number> = {};
     schools.forEach(s => s.items.forEach(i => {
@@ -375,9 +377,37 @@ export default function AdminDashboard() {
     }));
     return Object.entries(counts)
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 6)
       .map(([name, count]) => ({ name, count }));
   }, [schools]);
+
+  // Item status distribution for pie chart
+  const statusData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    schools.forEach(s => s.items.forEach(i => {
+      counts[i.status] = (counts[i.status] || 0) + 1;
+    }));
+    return Object.entries(counts).map(([name, value]) => ({ name, value }));
+  }, [schools]);
+
+  // Registration timeline (last 14 days)
+  const timelineData = useMemo(() => {
+    const days: Record<string, number> = {};
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      days[d.toISOString().split('T')[0]] = 0;
+    }
+    schools.forEach(s => {
+      const day = new Date(s.created_at).toISOString().split('T')[0];
+      if (days[day] !== undefined) days[day]++;
+    });
+    return Object.entries(days).map(([date, count]) => ({
+      date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      registrations: count,
+    }));
+  }, [schools]);
+
+  const PIE_COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--muted-foreground))'];
 
   if (loading) {
     return (
@@ -505,67 +535,120 @@ export default function AdminDashboard() {
           </Card>
         </div>
 
-        {/* Charts Row */}
+        {/* Charts Row 1: Category breakdown + Registration Timeline */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-base">Schools & Items by Category</CardTitle>
+              <CardDescription className="text-xs">How many schools and items are registered per school level</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {categoryData.map(d => (
-                  <div key={d.category} className="space-y-1">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">{d.category}</span>
-                      <span className="font-medium text-foreground">{d.schools} schools · {d.items} items</span>
-                    </div>
-                    <div className="flex gap-1 h-6">
-                      <div
-                        className="bg-primary rounded-sm transition-all"
-                        style={{ width: `${schools.length ? (d.schools / schools.length) * 100 : 0}%`, minWidth: d.schools ? '4px' : '0' }}
-                        title={`${d.schools} schools`}
-                      />
-                      <div
-                        className="bg-accent rounded-sm transition-all"
-                        style={{ width: `${totalItems ? (d.items / totalItems) * 100 : 0}%`, minWidth: d.items ? '4px' : '0' }}
-                        title={`${d.items} items`}
-                      />
-                    </div>
-                  </div>
-                ))}
-                <div className="flex gap-4 text-xs text-muted-foreground pt-1">
-                  <div className="flex items-center gap-1"><div className="w-3 h-3 bg-primary rounded-sm" /> Schools</div>
-                  <div className="flex items-center gap-1"><div className="w-3 h-3 bg-accent rounded-sm" /> Items</div>
-                </div>
-              </div>
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={categoryData} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                  <XAxis dataKey="categoryFull" tick={{ fontSize: 11 }} className="fill-muted-foreground" />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 11 }} className="fill-muted-foreground" />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '13px' }}
+                    labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 600 }}
+                  />
+                  <Legend wrapperStyle={{ fontSize: '12px' }} />
+                  <Bar dataKey="schools" name="Schools" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="items" name="Items" fill="hsl(var(--secondary))" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
             </CardContent>
           </Card>
+
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base">Top Item Types</CardTitle>
+              <CardTitle className="text-base">Registration Timeline</CardTitle>
+              <CardDescription className="text-xs">Daily school registrations over the last 14 days</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={260}>
+                <LineChart data={timelineData} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                  <XAxis dataKey="date" tick={{ fontSize: 10 }} className="fill-muted-foreground" interval="preserveStartEnd" />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 11 }} className="fill-muted-foreground" />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '13px' }}
+                    labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 600 }}
+                  />
+                  <Line type="monotone" dataKey="registrations" name="Registrations" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Charts Row 2: Item Types + Status Distribution */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <Card className="lg:col-span-2">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Items by Type</CardTitle>
+              <CardDescription className="text-xs">Number of registered items for each performance type</CardDescription>
             </CardHeader>
             <CardContent>
               {itemTypeData.length === 0 ? (
                 <p className="text-sm text-muted-foreground py-4 text-center">No items yet</p>
               ) : (
-                <div className="space-y-2">
-                  {itemTypeData.map(d => {
-                    const maxCount = itemTypeData[0]?.count || 1;
-                    return (
-                      <div key={d.name} className="space-y-1">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground truncate mr-2">{d.name}</span>
-                          <span className="font-medium text-foreground shrink-0">{d.count}</span>
-                        </div>
-                        <div className="h-5 bg-secondary rounded-sm overflow-hidden">
-                          <div
-                            className="h-full bg-primary/80 rounded-sm transition-all"
-                            style={{ width: `${(d.count / maxCount) * 100}%` }}
-                          />
-                        </div>
+                <ResponsiveContainer width="100%" height={Math.max(200, itemTypeData.length * 36)}>
+                  <BarChart data={itemTypeData} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" horizontal={false} />
+                    <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} className="fill-muted-foreground" />
+                    <YAxis dataKey="name" type="category" width={130} tick={{ fontSize: 11 }} className="fill-muted-foreground" />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '13px' }}
+                      labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 600 }}
+                    />
+                    <Bar dataKey="count" name="Count" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Item Status</CardTitle>
+              <CardDescription className="text-xs">Distribution of items by their current status</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {statusData.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-4 text-center">No items yet</p>
+              ) : (
+                <div>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <PieChart>
+                      <Pie
+                        data={statusData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={45}
+                        outerRadius={80}
+                        paddingAngle={3}
+                        dataKey="value"
+                        label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
+                        labelLine={false}
+                      >
+                        {statusData.map((_, index) => (
+                          <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '13px' }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="flex flex-wrap justify-center gap-3 mt-2">
+                    {statusData.map((entry, index) => (
+                      <div key={entry.name} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }} />
+                        {entry.name} ({entry.value})
                       </div>
-                    );
-                  })}
+                    ))}
+                  </div>
                 </div>
               )}
             </CardContent>
