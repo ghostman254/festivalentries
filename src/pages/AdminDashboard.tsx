@@ -86,13 +86,9 @@ export default function AdminDashboard() {
   const [changingPassword, setChangingPassword] = useState(false);
   useEffect(() => {
     const checkAdminRole = async (userId: string) => {
-      const { data: roleData } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId)
-        .single();
+      const { data: isAdmin, error } = await supabase.rpc('is_admin', { check_user_id: userId });
       
-      if (!roleData || roleData.role !== 'admin') {
+      if (error || !isAdmin) {
         toast({ 
           title: 'Access Denied', 
           description: 'You do not have administrator privileges.', 
