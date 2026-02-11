@@ -407,7 +407,7 @@ export default function AdminDashboard() {
     }));
   }, [schools]);
 
-  const PIE_COLORS = ['#3b82f6', '#f59e0b', '#10b981', '#8b5cf6'];
+  const PIE_COLORS = ['#3b82f6', '#f59e0b', '#10b981', '#8b5cf6', '#ef4444', '#06b6d4', '#ec4899', '#84cc16', '#f97316', '#6366f1', '#14b8a6', '#a855f7', '#e11d48', '#0ea5e9', '#eab308', '#22c55e'];
 
   if (loading) {
     return (
@@ -612,34 +612,28 @@ export default function AdminDashboard() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-base">Item Status</CardTitle>
-              <CardDescription className="text-xs">Distribution of {totalItems} items by current status</CardDescription>
+              <CardDescription className="text-xs">Distribution of {totalItems} items by type &amp; status</CardDescription>
             </CardHeader>
             <CardContent>
-              {statusData.length === 0 ? (
+              {itemTypeData.length === 0 ? (
                 <p className="text-sm text-muted-foreground py-4 text-center">No items yet</p>
-              ) : statusData.length === 1 ? (
-                <div className="flex flex-col items-center justify-center py-6 gap-3">
-                  <div className="w-32 h-32 rounded-full flex items-center justify-center" style={{ backgroundColor: PIE_COLORS[0] }}>
-                    <span className="text-white text-2xl font-bold">{statusData[0].value}</span>
-                  </div>
-                  <p className="text-sm font-medium text-foreground">All items: {statusData[0].name}</p>
-                </div>
               ) : (
                 <div>
-                  <ResponsiveContainer width="100%" height={200}>
+                  <ResponsiveContainer width="100%" height={220}>
                     <PieChart>
                       <Pie
-                        data={statusData}
+                        data={itemTypeData}
                         cx="50%"
                         cy="50%"
-                        innerRadius={45}
+                        innerRadius={40}
                         outerRadius={80}
-                        paddingAngle={3}
-                        dataKey="value"
-                        label={({ value }) => `${value}`}
+                        paddingAngle={2}
+                        dataKey="count"
+                        nameKey="name"
+                        label={({ name, count }) => `${count}`}
                         labelLine={false}
                       >
-                        {statusData.map((_, index) => (
+                        {itemTypeData.map((_, index) => (
                           <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                         ))}
                       </Pie>
@@ -649,11 +643,11 @@ export default function AdminDashboard() {
                       />
                     </PieChart>
                   </ResponsiveContainer>
-                  <div className="flex flex-wrap justify-center gap-3 mt-2">
-                    {statusData.map((entry, index) => (
+                  <div className="flex flex-wrap justify-center gap-x-3 gap-y-1.5 mt-3">
+                    {itemTypeData.map((entry, index) => (
                       <div key={entry.name} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }} />
-                        {entry.name} ({entry.value})
+                        <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }} />
+                        {entry.name} ({entry.count})
                       </div>
                     ))}
                   </div>
