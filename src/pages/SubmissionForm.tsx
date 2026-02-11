@@ -97,14 +97,16 @@ export default function SubmissionForm() {
     items: [emptyItem()],
   });
 
-  // Live duplicate detection
+  // Live duplicate detection - checks same school name AND same category
   const duplicateMatch = useMemo(() => {
     const typed = form.schoolName.trim();
-    if (typed.length < 3 || registeredSchools.length === 0) return null;
+    if (typed.length < 3 || registeredSchools.length === 0 || !form.category) return null;
     const normalizedTyped = normalizeSchoolName(typed);
     if (!normalizedTyped) return null;
-    return registeredSchools.find(s => normalizeSchoolName(s.school_name) === normalizedTyped) || null;
-  }, [form.schoolName, registeredSchools]);
+    return registeredSchools.find(s => 
+      normalizeSchoolName(s.school_name) === normalizedTyped && s.category === form.category
+    ) || null;
+  }, [form.schoolName, form.category, registeredSchools]);
 
   useEffect(() => {
     supabase.from('app_settings').select('value').eq('key', 'submissions_open').maybeSingle()
@@ -193,7 +195,7 @@ export default function SubmissionForm() {
 
       if (!data.success) {
         if (data.error?.includes('already registered')) {
-          setErrors({ schoolName: 'This school is already registered in the system.' });
+          setErrors({ schoolName: data.error });
         }
         throw new Error(data.error || 'Submission failed');
       }
@@ -290,7 +292,7 @@ export default function SubmissionForm() {
                       <div className="flex items-start gap-2 p-2.5 rounded-md bg-amber-50 border border-amber-200 text-amber-800">
                         <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
                         <p className="text-sm">
-                          This name closely matches <span className="font-semibold">"{duplicateMatch.school_name}"</span> ({duplicateMatch.category}), which is already registered. Duplicate submissions will be rejected.
+                          This school is already registered under <span className="font-semibold">{duplicateMatch.category}</span>. Each school can only register once per category.
                         </p>
                       </div>
                     )}
