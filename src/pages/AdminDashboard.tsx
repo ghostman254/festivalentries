@@ -582,79 +582,22 @@ export default function AdminDashboard() {
           </Card>
         </div>
 
-        {/* Charts Row 2: Item Types + Status Distribution */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <Card className="lg:col-span-2">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Items by Type</CardTitle>
-              <CardDescription className="text-xs">Number of registered items for each performance type</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {itemTypeData.length === 0 ? (
-                <p className="text-sm text-muted-foreground py-4 text-center">No items yet</p>
-              ) : (
-                <ResponsiveContainer width="100%" height={Math.max(200, itemTypeData.length * 36)}>
-                  <BarChart data={itemTypeData} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" horizontal={false} />
-                    <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} className="fill-muted-foreground" />
-                    <YAxis dataKey="name" type="category" width={130} tick={{ fontSize: 11 }} className="fill-muted-foreground" />
-                    <Tooltip
-                      contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '13px' }}
-                      labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 600 }}
-                    />
-                    <Bar dataKey="count" name="Count" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Item Status</CardTitle>
-              <CardDescription className="text-xs">Distribution of {totalItems} items by type &amp; status</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {itemTypeData.length === 0 ? (
-                <p className="text-sm text-muted-foreground py-4 text-center">No items yet</p>
-              ) : (
-                <div>
-                  <ResponsiveContainer width="100%" height={220}>
-                    <PieChart>
-                      <Pie
-                        data={itemTypeData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={40}
-                        outerRadius={80}
-                        paddingAngle={2}
-                        dataKey="count"
-                        nameKey="name"
-                        label={({ name, count }) => `${count}`}
-                        labelLine={false}
-                      >
-                        {itemTypeData.map((_, index) => (
-                          <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '13px' }}
-                        formatter={(value: number, name: string) => [`${value} items`, name]}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div className="flex flex-wrap justify-center gap-x-3 gap-y-1.5 mt-3">
-                    {itemTypeData.map((entry, index) => (
-                      <div key={entry.name} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }} />
-                        {entry.name} ({entry.count})
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+        {/* Item Type Cards */}
+        <div>
+          <h3 className="text-sm font-semibold text-foreground mb-3">Items by Type ({totalItems} total)</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+            {ITEM_TYPES.map(type => {
+              const count = itemTypeData.find(d => d.name === type)?.count || 0;
+              return (
+                <Card key={type} className="border">
+                  <CardContent className="p-3 text-center">
+                    <p className="text-2xl font-bold text-primary">{count}</p>
+                    <p className="text-xs text-muted-foreground mt-1 leading-tight">{type}</p>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
         </div>
 
         {/* Filters */}
