@@ -126,10 +126,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      check_school_exists: {
-        Args: { school_name_param: string }
-        Returns: boolean
-      }
+      check_school_exists:
+        | { Args: { school_name_param: string }; Returns: boolean }
+        | {
+            Args: { category_param?: string; school_name_param: string }
+            Returns: boolean
+          }
       get_admin_users: {
         Args: never
         Returns: {
