@@ -23,36 +23,17 @@ export default function AdminLogin() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session) {
-        // Use the is_admin RPC which handles both admin and super_admin roles
-        const { data: isAdmin } = await supabase.rpc('is_admin', { check_user_id: session.user.id });
-        
-        if (isAdmin) {
-          navigate('/admin', { replace: true });
-        } else {
-          toast({ 
-            title: 'Access Denied', 
-            description: 'You do not have administrator privileges.', 
-            variant: 'destructive' 
-          });
-          await supabase.auth.signOut();
-        }
-      }
-    });
-
+    // Check existing session on mount
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session) {
-        const { data: isAdmin } = await supabase.rpc('is_admin', { check_user_id: session.user.id });
+        const { data: isAdmin, error } = await supabase.rpc('is_admin', { check_user_id: session.user.id });
         
-        if (isAdmin) {
+        if (!error && isAdmin) {
           navigate('/admin', { replace: true });
         }
       }
     });
-
-    return () => subscription.unsubscribe();
-  }, [navigate, toast]);
+  }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,12 +46,24 @@ export default function AdminLogin() {
 
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       });
       if (error) throw error;
-      // The onAuthStateChange callback will handle navigation after role check
+
+      const { data: isAdmin, error: rpcError } = await supabase.rpc('is_admin', { check_user_id: data.user.id });
+      
+      if (rpcError || !isAdmin) {
+        toast({ 
+          title: 'Access Denied', 
+          description: 'You do not have administrator privileges.', 
+          variant: 'destructive' 
+        });
+        await supabase.auth.signOut();
+      } else {
+        navigate('/admin', { replace: true });
+      }
     } catch (err: unknown) {
       toast({ title: 'Error', description: logAndSanitizeError(err, 'auth', 'Login error'), variant: 'destructive' });
     } finally {
