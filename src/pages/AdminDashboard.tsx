@@ -407,7 +407,7 @@ export default function AdminDashboard() {
     }));
   }, [schools]);
 
-  const PIE_COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--muted-foreground))'];
+  const PIE_COLORS = ['#3b82f6', '#f59e0b', '#10b981', '#8b5cf6'];
 
   if (loading) {
     return (
@@ -540,7 +540,7 @@ export default function AdminDashboard() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-base">Schools & Items by Category</CardTitle>
-              <CardDescription className="text-xs">How many schools and items are registered per school level</CardDescription>
+              <CardDescription className="text-xs">{schools.length} schools, {totalItems} items across all levels</CardDescription>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={260}>
@@ -612,11 +612,18 @@ export default function AdminDashboard() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-base">Item Status</CardTitle>
-              <CardDescription className="text-xs">Distribution of items by their current status</CardDescription>
+              <CardDescription className="text-xs">Distribution of {totalItems} items by current status</CardDescription>
             </CardHeader>
             <CardContent>
               {statusData.length === 0 ? (
                 <p className="text-sm text-muted-foreground py-4 text-center">No items yet</p>
+              ) : statusData.length === 1 ? (
+                <div className="flex flex-col items-center justify-center py-6 gap-3">
+                  <div className="w-32 h-32 rounded-full flex items-center justify-center" style={{ backgroundColor: PIE_COLORS[0] }}>
+                    <span className="text-white text-2xl font-bold">{statusData[0].value}</span>
+                  </div>
+                  <p className="text-sm font-medium text-foreground">All items: {statusData[0].name}</p>
+                </div>
               ) : (
                 <div>
                   <ResponsiveContainer width="100%" height={200}>
@@ -629,7 +636,7 @@ export default function AdminDashboard() {
                         outerRadius={80}
                         paddingAngle={3}
                         dataKey="value"
-                        label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
+                        label={({ value }) => `${value}`}
                         labelLine={false}
                       >
                         {statusData.map((_, index) => (
@@ -638,6 +645,7 @@ export default function AdminDashboard() {
                       </Pie>
                       <Tooltip
                         contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '13px' }}
+                        formatter={(value: number, name: string) => [`${value} items`, name]}
                       />
                     </PieChart>
                   </ResponsiveContainer>
