@@ -290,14 +290,7 @@ export default function AdminDashboard() {
     }
     setDeleteSchoolId(null);
   };
-  const currentUserRole = admins.find(a => a.user_id === session?.user.id)?.role;
-  const isSuperAdmin = currentUserRole === 'super_admin';
-
   const toggleSubmissions = async () => {
-    if (!isSuperAdmin) {
-      toast({ title: 'Permission Denied', description: 'Only super admins can toggle the submissions portal.', variant: 'destructive' });
-      return;
-    }
     const newVal = !submissionsOpen;
     const { error } = await supabase.from('app_settings').update({ value: String(newVal), updated_at: new Date().toISOString() }).eq('key', 'submissions_open');
     if (error) {
@@ -524,8 +517,7 @@ export default function AdminDashboard() {
                 </p>
               </div>
               <div className="flex flex-col items-end gap-1">
-                <Switch checked={submissionsOpen} onCheckedChange={toggleSubmissions} disabled={!isSuperAdmin} />
-                {!isSuperAdmin && <p className="text-xs text-muted-foreground">Super admin only</p>}
+                <Switch checked={submissionsOpen} onCheckedChange={toggleSubmissions} />
               </div>
             </CardContent>
           </Card>
@@ -833,10 +825,8 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant={admin.role === 'super_admin' ? 'default' : 'secondary'}>
-                        {admin.role === 'super_admin' ? '👑 Super Admin' : admin.role}
-                      </Badge>
-                      {admin.user_id !== session?.user.id && admin.role !== 'super_admin' && (
+                      <Badge variant="secondary">{admin.role}</Badge>
+                      {admin.user_id !== session?.user.id && (
                         <Button 
                           variant="ghost" 
                           size="sm" 
