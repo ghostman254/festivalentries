@@ -8,7 +8,7 @@ const corsHeaders = {
 // Rate limiting: Store submission attempts by IP
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 const RATE_LIMIT_WINDOW = 60 * 60 * 1000; // 1 hour
-const MAX_REQUESTS_PER_WINDOW = 5; // 5 submissions per hour per IP
+const MAX_REQUESTS_PER_WINDOW = 20; // 20 submissions per hour per IP
 
 // Validation constants
 const SCHOOL_CATEGORIES = ['Pre School', 'Lower Grade', 'Primary', 'Junior School'];
@@ -272,6 +272,14 @@ Deno.serve(async (req) => {
 
     if (schoolError) {
       console.error('Error inserting school:', schoolError);
+      if (schoolError.code === '23505') {
+        return new Response(JSON.stringify({ 
+          error: `This school is already registered under the ${body.category} category.` 
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
       throw new Error('Failed to create school record');
     }
 
