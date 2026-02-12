@@ -97,6 +97,19 @@ export default function SubmissionForm() {
     items: [emptyItem()],
   });
 
+  // Find categories already registered for the typed school name
+  const registeredCategories = useMemo(() => {
+    const typed = form.schoolName.trim();
+    if (typed.length < 3 || registeredSchools.length === 0) return [];
+    const normalizedTyped = normalizeSchoolName(typed);
+    if (!normalizedTyped) return [];
+    return registeredSchools
+      .filter(s => normalizeSchoolName(s.school_name) === normalizedTyped)
+      .map(s => s.category);
+  }, [form.schoolName, registeredSchools]);
+
+  const allCategoriesFilled = registeredCategories.length >= 4;
+
   // Live duplicate detection - checks same school name AND same category
   const duplicateMatch = useMemo(() => {
     const typed = form.schoolName.trim();
@@ -288,7 +301,15 @@ export default function SubmissionForm() {
                       placeholder="Enter school name"
                       className={duplicateMatch ? 'border-amber-500 focus-visible:ring-amber-500' : ''}
                     />
-                    {duplicateMatch && (
+                    {allCategoriesFilled && (
+                      <div className="flex items-start gap-2 p-2.5 rounded-md bg-destructive/10 border border-destructive/30 text-destructive">
+                        <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                        <p className="text-sm">
+                          This school has already registered in all 4 categories. No more submissions can be made.
+                        </p>
+                      </div>
+                    )}
+                    {!allCategoriesFilled && duplicateMatch && (
                       <div className="flex items-start gap-2 p-2.5 rounded-md bg-amber-50 border border-amber-200 text-amber-800">
                         <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
                         <p className="text-sm">
@@ -306,7 +327,6 @@ export default function SubmissionForm() {
                       onValueChange={val => {
                         const newCategory = val as any;
                         const allowed = getAllowedItemTypes(newCategory);
-                        // Reset items that aren't allowed in the new category
                         const resetItems = form.items.map(it => 
                           it.itemType && !allowed.includes(it.itemType) 
                             ? { itemType: undefined as any, language: null } 
@@ -314,13 +334,16 @@ export default function SubmissionForm() {
                         );
                         setForm(f => ({ ...f, category: newCategory, items: resetItems }));
                       }}
+                      disabled={allCategoriesFilled}
                     >
                       <SelectTrigger className="bg-card">
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                       <SelectContent className="bg-popover z-50">
                         {SCHOOL_CATEGORIES.map(c => (
-                          <SelectItem key={c} value={c}>{c}</SelectItem>
+                          <SelectItem key={c} value={c} disabled={registeredCategories.includes(c)}>
+                            {c} {registeredCategories.includes(c) ? '(registered)' : ''}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
