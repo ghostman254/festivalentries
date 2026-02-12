@@ -242,6 +242,21 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Check if school has already registered in all 4 categories
+    const { data: categoryCount, error: countError } = await supabase
+      .rpc('get_school_registered_categories', { school_name_param: normalizedSchoolName });
+
+    if (countError) {
+      console.error('Error checking category count:', countError);
+    } else if (categoryCount && categoryCount.length >= 4) {
+      return new Response(JSON.stringify({ 
+        error: `This school has already registered in all 4 categories. No more submissions are allowed.` 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // Insert school
     const { data: school, error: schoolError } = await supabase
       .from('schools')
