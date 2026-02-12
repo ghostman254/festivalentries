@@ -439,10 +439,10 @@ export default function SubmissionForm() {
               <Button 
                 type="submit" 
                 className="w-full h-12 text-base font-semibold group" 
-                disabled={submitting}
+                disabled={submitting || allCategoriesFilled || !!duplicateMatch}
               >
                 <Send className="h-4 w-4 mr-2 transition-transform duration-300 group-hover:translate-x-1" />
-                {submitting ? 'Submitting...' : 'Submit Registration'}
+                {submitting ? 'Submitting...' : allCategoriesFilled ? 'All Categories Registered' : 'Submit Registration'}
               </Button>
             </form>
           </div>
