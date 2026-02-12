@@ -30,6 +30,7 @@ export const CATEGORY_REGULATIONS: Record<string, ItemRegulation[]> = {
     { itemType: 'Play', maxTime: '15 min', maxCast: 20 },
     { itemType: 'Solo Verse', maxTime: '6 min', maxCast: 2 },
     { itemType: 'Choral Verse', maxTime: '6 min', maxCast: 18 },
+    { itemType: 'Singing Games', maxTime: '5 min', maxCast: 20 },
     { itemType: 'Narratives', maxTime: '5 min', maxCast: 4 },
     { itemType: 'Modern Dance', maxTime: '7 min', maxCast: 9 },
     { itemType: 'Cultural Creative Dance', maxTime: '7 min', maxCast: 30 },
