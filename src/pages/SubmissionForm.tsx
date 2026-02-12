@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Plus, Send, GraduationCap, AlertCircle, ArrowLeft, School, Search, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { SubmissionConfirmDialog } from '@/components/SubmissionConfirmDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -78,6 +79,7 @@ export default function SubmissionForm() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [submitting, setSubmitting] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [submissionsOpen, setSubmissionsOpen] = useState(true);
   const [loading, setLoading] = useState(true);
   const [errors, setErrors] = useState<Record<string, any>>({});
@@ -186,6 +188,11 @@ export default function SubmissionForm() {
       }
     }
 
+    // Show confirmation dialog instead of submitting directly
+    setShowConfirm(true);
+  };
+
+  const handleConfirmedSubmit = async () => {
     setSubmitting(true);
     try {
       const { data, error } = await supabase.functions.invoke('submit-registration', {
@@ -234,6 +241,7 @@ export default function SubmissionForm() {
       }
     } finally {
       setSubmitting(false);
+      setShowConfirm(false);
     }
   };
 
@@ -484,6 +492,14 @@ export default function SubmissionForm() {
           </aside>
         </div>
       </main>
+
+      <SubmissionConfirmDialog
+        open={showConfirm}
+        onOpenChange={setShowConfirm}
+        form={form}
+        onConfirm={handleConfirmedSubmit}
+        submitting={submitting}
+      />
     </div>
   );
 }
