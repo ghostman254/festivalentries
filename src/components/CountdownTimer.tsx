@@ -9,7 +9,7 @@ interface TimeLeft {
   seconds: number;
 }
 
-const DEADLINE = new Date('2026-02-13T23:59:59');
+const DEADLINE = new Date('2026-02-16T14:00:00');
 
 export default function CountdownTimer() {
   const [timeLeft, setTimeLeft] = useState<TimeLeft>(calculateTimeLeft());
@@ -68,7 +68,7 @@ export default function CountdownTimer() {
       <div className="flex items-center justify-center gap-2 mb-3">
         <Clock className="h-5 w-5 text-primary-foreground/80" />
         <span className="text-sm font-medium text-primary-foreground/80 uppercase tracking-wide">
-          Submission Deadline: 13th February 2026
+          Submission Deadline: 16th February 2026, 2:00 PM
         </span>
       </div>
       <div className="grid grid-cols-4 gap-2 sm:gap-4">
