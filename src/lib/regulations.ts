@@ -18,26 +18,26 @@ export interface ItemRegulation {
  */
 export const CATEGORY_REGULATIONS: Record<string, ItemRegulation[]> = {
   'Pre-Primary': [
-    { itemType: 'Dramatized Singing Games', code: 'A1', maxTime: null, maxCast: null },
-    { itemType: 'Dramatized Verse (Solo)', code: 'A2', maxTime: null, maxCast: null },
-    { itemType: 'Dramatized Verse (Choral)', code: 'A3', maxTime: null, maxCast: null },
+    { itemType: 'Dramatized Singing Games', code: 'A1', maxTime: '5 min', maxCast: null },
+    { itemType: 'Dramatized Verse (Solo)', code: 'A2', maxTime: '4 min', maxCast: null },
+    { itemType: 'Dramatized Verse (Choral)', code: 'A3', maxTime: '4 min', maxCast: null },
   ],
   'Lower Primary': [
-    { itemType: 'Dramatized Verse (Choral)', code: 'A3', maxTime: null, maxCast: null },
-    { itemType: 'Dramatized Solo Verse', code: 'A4', maxTime: null, maxCast: null },
-    { itemType: 'Film for Early Years', code: 'A5', maxTime: null, maxCast: null },
+    { itemType: 'Dramatized Verse (Choral)', code: 'A3', maxTime: '6 min', maxCast: null },
+    { itemType: 'Dramatized Solo Verse', code: 'A4', maxTime: '6 min', maxCast: null },
+    { itemType: 'Film for Early Years', code: 'A5', maxTime: '30 min', maxCast: null },
   ],
   'Primary': [
-    { itemType: 'Play', code: 'B1', maxTime: null, maxCast: null },
-    { itemType: 'Cultural Creative Dance', code: 'B2', maxTime: null, maxCast: null },
-    { itemType: 'Modern Creative Dance', code: 'B3', maxTime: null, maxCast: null },
-    { itemType: 'Dramatized Verse (Solo)', code: 'B4', maxTime: null, maxCast: null },
-    { itemType: 'Dramatized Verse (Choral)', code: 'B5', maxTime: null, maxCast: null },
-    { itemType: 'Narrative', code: 'B6', maxTime: null, maxCast: null },
-    { itemType: 'Film', code: 'B7', maxTime: null, maxCast: null },
-    { itemType: 'Play in Kenyan Sign Language', code: 'B8', maxTime: null, maxCast: null },
-    { itemType: 'Dramatized Dance for Special Needs (Mentally Handicapped)', code: 'B9', maxTime: null, maxCast: null },
-    { itemType: 'Dramatized Dance for Special Needs (Physically Handicapped)', code: 'B10', maxTime: null, maxCast: null },
+    { itemType: 'Play', code: 'B1', maxTime: '15 min', maxCast: null },
+    { itemType: 'Cultural Creative Dance', code: 'B2', maxTime: '7 min', maxCast: null },
+    { itemType: 'Modern Creative Dance', code: 'B3', maxTime: '7 min', maxCast: null },
+    { itemType: 'Dramatized Verse (Solo)', code: 'B4', maxTime: '6 min', maxCast: null },
+    { itemType: 'Dramatized Verse (Choral)', code: 'B5', maxTime: '6 min', maxCast: null },
+    { itemType: 'Narrative', code: 'B6', maxTime: '5 min', maxCast: null },
+    { itemType: 'Film', code: 'B7', maxTime: '30 min', maxCast: null },
+    { itemType: 'Play in Kenyan Sign Language', code: 'B8', maxTime: '20 min', maxCast: null },
+    { itemType: 'Dramatized Dance for Special Needs (Mentally Handicapped)', code: 'B9', maxTime: '10 min', maxCast: null },
+    { itemType: 'Dramatized Dance for Special Needs (Physically Handicapped)', code: 'B10', maxTime: '10 min', maxCast: null },
   ],
 };
 
