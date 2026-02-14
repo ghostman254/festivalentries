@@ -28,10 +28,9 @@ function normalizeSchoolName(name: string): string {
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
-  'Pre School': 'bg-amber-100 text-amber-800 border-amber-200',
-  'Lower Grade': 'bg-blue-100 text-blue-800 border-blue-200',
+  'Pre-Primary': 'bg-amber-100 text-amber-800 border-amber-200',
+  'Lower Primary': 'bg-blue-100 text-blue-800 border-blue-200',
   'Primary': 'bg-emerald-100 text-emerald-800 border-emerald-200',
-  'Junior School': 'bg-purple-100 text-purple-800 border-purple-200',
 };
 
 function RegisteredSchoolsList({ schools, search }: { schools: { school_name: string; category: string }[]; search: string }) {
@@ -110,7 +109,7 @@ export default function SubmissionForm() {
       .map(s => s.category);
   }, [form.schoolName, registeredSchools]);
 
-  const allCategoriesFilled = registeredCategories.length >= 4;
+  const allCategoriesFilled = registeredCategories.length >= 3;
 
   // Live duplicate detection - checks same school name AND same category
   const duplicateMatch = useMemo(() => {
@@ -311,9 +310,9 @@ export default function SubmissionForm() {
                     />
                     {allCategoriesFilled && (
                       <div className="flex items-start gap-2 p-2.5 rounded-md bg-destructive/10 border border-destructive/30 text-destructive">
-                        <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                       <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
                         <p className="text-sm">
-                          This school has already registered in all 4 categories. No more submissions can be made.
+                          This school has already registered in all 3 categories. No more submissions can be made.
                         </p>
                       </div>
                     )}

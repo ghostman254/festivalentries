@@ -10,20 +10,19 @@ import { cn } from '@/lib/utils';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 const itemIcons: Record<string, React.ReactNode> = {
-  'Choral Verse': <Music className="h-5 w-5" />,
+  'Dramatized Singing Games': <Music className="h-5 w-5" />,
+  'Dramatized Verse (Solo)': <Mic2 className="h-5 w-5" />,
+  'Dramatized Verse (Choral)': <Music className="h-5 w-5" />,
+  'Dramatized Solo Verse': <Mic2 className="h-5 w-5" />,
+  'Film for Early Years': <Video className="h-5 w-5" />,
   'Play': <Theater className="h-5 w-5" />,
-  'Spoken Word': <Mic2 className="h-5 w-5" />,
-  'Solo Verse': <Mic2 className="h-5 w-5" />,
-  'Modern Dance': <Sparkles className="h-5 w-5" />,
-  'Comedy': <Theater className="h-5 w-5" />,
-  'Live Broadcast': <Radio className="h-5 w-5" />,
-  'Podcast': <Podcast className="h-5 w-5" />,
-  'Singing Games': <Music className="h-5 w-5" />,
-  'Narratives': <FileText className="h-5 w-5" />,
   'Cultural Creative Dance': <Sparkles className="h-5 w-5" />,
-  'Video Song': <Video className="h-5 w-5" />,
-  'Documentary': <Video className="h-5 w-5" />,
-  'Advert': <Video className="h-5 w-5" />,
+  'Modern Creative Dance': <Sparkles className="h-5 w-5" />,
+  'Narrative': <FileText className="h-5 w-5" />,
+  'Film': <Video className="h-5 w-5" />,
+  'Play in Kenyan Sign Language': <Theater className="h-5 w-5" />,
+  'Dramatized Dance for Special Needs (Mentally Handicapped)': <Sparkles className="h-5 w-5" />,
+  'Dramatized Dance for Special Needs (Physically Handicapped)': <Sparkles className="h-5 w-5" />,
 };
 
 interface ItemFormCardProps {
@@ -96,11 +95,16 @@ export function ItemFormCard({ index, item, onChange, onRemove, canRemove, error
                   {item.language && (
                     <p className="text-xs text-muted-foreground">Language: {item.language}</p>
                   )}
-                  {regulation && (
+                    {regulation && (
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Clock className="h-3 w-3" /> {regulation.maxTime}
-                      </span>
+                      {regulation.code && (
+                        <span className="text-xs text-muted-foreground font-mono">{regulation.code}</span>
+                      )}
+                      {regulation.maxTime && (
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Clock className="h-3 w-3" /> {regulation.maxTime}
+                        </span>
+                      )}
                       {regulation.maxCast !== null && (
                         <span className="text-xs text-muted-foreground flex items-center gap-1">
                           <Users className="h-3 w-3" /> Max {regulation.maxCast}
@@ -182,9 +186,16 @@ export function ItemFormCard({ index, item, onChange, onRemove, canRemove, error
                     </span>
                     {reg && (
                       <div className="flex items-center gap-1.5 mt-1 flex-wrap justify-center">
-                        <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground">
-                          <Clock className="h-2.5 w-2.5" />{reg.maxTime}
-                        </span>
+                        {reg.code && (
+                          <span className="inline-flex items-center text-[10px] text-muted-foreground font-mono">
+                            {reg.code}
+                          </span>
+                        )}
+                        {reg.maxTime && (
+                          <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                            <Clock className="h-2.5 w-2.5" />{reg.maxTime}
+                          </span>
+                        )}
                         {reg.maxCast !== null && (
                           <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground">
                             <Users className="h-2.5 w-2.5" />{reg.maxCast}
