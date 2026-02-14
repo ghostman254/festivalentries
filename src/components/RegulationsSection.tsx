@@ -49,6 +49,9 @@ export default function RegulationsSection() {
                 <thead>
                   <tr className="bg-primary/5 border-b border-border">
                     <th className="text-left py-3 px-4 text-sm font-heading font-semibold text-foreground">
+                      Code
+                    </th>
+                    <th className="text-left py-3 px-4 text-sm font-heading font-semibold text-foreground">
                       Item
                     </th>
                     <th className="text-center py-3 px-4 text-sm font-heading font-semibold text-foreground">
@@ -75,12 +78,21 @@ export default function RegulationsSection() {
                       )}
                     >
                       <td className="py-3 px-4">
+                        <Badge variant="outline" className="font-mono text-xs">
+                          {reg.code}
+                        </Badge>
+                      </td>
+                      <td className="py-3 px-4">
                         <span className="font-medium text-foreground text-sm">{reg.itemType}</span>
                       </td>
                       <td className="py-3 px-4 text-center">
-                        <Badge variant="outline" className="font-mono text-xs">
-                          {reg.maxTime}
-                        </Badge>
+                        {reg.maxTime ? (
+                          <Badge variant="outline" className="font-mono text-xs">
+                            {reg.maxTime}
+                          </Badge>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
                       </td>
                       <td className="py-3 px-4 text-center">
                         {reg.maxCast !== null ? (

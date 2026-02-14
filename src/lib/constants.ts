@@ -1,27 +1,23 @@
 export const SCHOOL_CATEGORIES = [
-  'Pre School',
-  'Lower Grade',
+  'Pre-Primary',
+  'Lower Primary',
   'Primary',
-  'Junior School',
 ] as const;
 
 export const ITEM_TYPES = [
-  'Choral Verse',
+  'Dramatized Singing Games',
+  'Dramatized Verse (Solo)',
+  'Dramatized Verse (Choral)',
+  'Dramatized Solo Verse',
+  'Film for Early Years',
   'Play',
-  'Spoken Word',
-  'Solo Verse',
-  'Modern Dance',
-  'Comedy',
-  'Live Broadcast',
-  'Podcast',
-  'Singing Games',
-  'Narratives',
   'Cultural Creative Dance',
-  'Video Song',
-  'Documentary',
-  'Advert',
-  'Features',
-  'Screen Solo',
+  'Modern Creative Dance',
+  'Narrative',
+  'Film',
+  'Play in Kenyan Sign Language',
+  'Dramatized Dance for Special Needs (Mentally Handicapped)',
+  'Dramatized Dance for Special Needs (Physically Handicapped)',
 ] as const;
 
 export const LANGUAGES = ['English', 'French', 'German'] as const;
@@ -29,10 +25,9 @@ export const LANGUAGES = ['English', 'French', 'German'] as const;
 export const MAX_ITEMS = 20;
 
 export const CATEGORY_ABBREVIATIONS: Record<string, string> = {
-  'Pre School': 'PRE',
-  'Lower Grade': 'LGR',
+  'Pre-Primary': 'PPR',
+  'Lower Primary': 'LPR',
   'Primary': 'PRI',
-  'Junior School': 'JSC',
 };
 
 /**
@@ -45,11 +40,9 @@ export function generateSchoolAbbreviation(schoolName: string): string {
   if (words.length === 0) return 'UNK';
   
   if (words.length === 1) {
-    // Single word: take first 3 characters
     return words[0].slice(0, 3).toUpperCase();
   }
   
-  // Multiple words: take first 2 chars of first word + first char of rest
   const firstWord = words[0].slice(0, 2).toUpperCase();
   const restInitials = words.slice(1).map(w => w[0].toUpperCase()).join('');
   

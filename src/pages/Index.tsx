@@ -31,20 +31,19 @@ import stepsDoodles from '@/assets/steps-doodles.png';
 import RegulationsSection from '@/components/RegulationsSection';
 
 const itemIcons: Record<string, React.ReactNode> = {
-  'Choral Verse': <Music className="h-6 w-6" />,
+  'Dramatized Singing Games': <Music className="h-6 w-6" />,
+  'Dramatized Verse (Solo)': <Mic2 className="h-6 w-6" />,
+  'Dramatized Verse (Choral)': <Music className="h-6 w-6" />,
+  'Dramatized Solo Verse': <Mic2 className="h-6 w-6" />,
+  'Film for Early Years': <Video className="h-6 w-6" />,
   'Play': <Theater className="h-6 w-6" />,
-  'Spoken Word': <Mic2 className="h-6 w-6" />,
-  'Solo Verse': <Mic2 className="h-6 w-6" />,
-  'Modern Dance': <Sparkles className="h-6 w-6" />,
-  'Comedy': <Theater className="h-6 w-6" />,
-  'Live Broadcast': <Radio className="h-6 w-6" />,
-  'Podcast': <Podcast className="h-6 w-6" />,
-  'Singing Games': <Music className="h-6 w-6" />,
-  'Narratives': <FileText className="h-6 w-6" />,
   'Cultural Creative Dance': <Sparkles className="h-6 w-6" />,
-  'Video Song': <Video className="h-6 w-6" />,
-  'Documentary': <Video className="h-6 w-6" />,
-  'Advert': <Video className="h-6 w-6" />,
+  'Modern Creative Dance': <Sparkles className="h-6 w-6" />,
+  'Narrative': <FileText className="h-6 w-6" />,
+  'Film': <Video className="h-6 w-6" />,
+  'Play in Kenyan Sign Language': <Theater className="h-6 w-6" />,
+  'Dramatized Dance for Special Needs (Mentally Handicapped)': <Sparkles className="h-6 w-6" />,
+  'Dramatized Dance for Special Needs (Physically Handicapped)': <Sparkles className="h-6 w-6" />,
 };
 
 const steps = [
