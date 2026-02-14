@@ -578,26 +578,29 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2.5">
-              {ITEM_TYPES.map((type, index) => {
-                const count = itemTypeData.find(d => d.name === type)?.count || 0;
-                const maxCount = Math.max(...itemTypeData.map(d => d.count), 1);
-                const percentage = totalItems > 0 ? (count / totalItems) * 100 : 0;
-                const barWidth = maxCount > 0 ? (count / maxCount) * 100 : 0;
-                const color = PIE_COLORS[index % PIE_COLORS.length];
-                return (
-                  <div key={type} className="flex items-center gap-3">
-                    <span className="text-xs text-muted-foreground w-[130px] shrink-0 truncate" title={type}>{type}</span>
-                    <div className="flex-1 h-6 bg-muted rounded-md overflow-hidden relative">
-                      <div
-                        className="h-full rounded-md transition-all duration-500 ease-out"
-                        style={{ width: `${barWidth}%`, backgroundColor: color, minWidth: count > 0 ? '4px' : '0' }}
-                      />
+              {itemTypeData.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">No items registered yet.</p>
+              ) : (
+                itemTypeData.map((item, index) => {
+                  const maxCount = Math.max(...itemTypeData.map(d => d.count), 1);
+                  const percentage = totalItems > 0 ? (item.count / totalItems) * 100 : 0;
+                  const barWidth = maxCount > 0 ? (item.count / maxCount) * 100 : 0;
+                  const color = PIE_COLORS[index % PIE_COLORS.length];
+                  return (
+                    <div key={item.name} className="flex items-center gap-3">
+                      <span className="text-xs text-muted-foreground w-[130px] shrink-0 truncate" title={item.name}>{item.name}</span>
+                      <div className="flex-1 h-6 bg-muted rounded-md overflow-hidden relative">
+                        <div
+                          className="h-full rounded-md transition-all duration-500 ease-out"
+                          style={{ width: `${barWidth}%`, backgroundColor: color, minWidth: '4px' }}
+                        />
+                      </div>
+                      <span className="text-xs font-semibold text-foreground w-8 text-right">{item.count}</span>
+                      <span className="text-xs text-muted-foreground w-10 text-right">{percentage.toFixed(0)}%</span>
                     </div>
-                    <span className="text-xs font-semibold text-foreground w-8 text-right">{count}</span>
-                    <span className="text-xs text-muted-foreground w-10 text-right">{percentage.toFixed(0)}%</span>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
           </CardContent>
         </Card>
