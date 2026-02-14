@@ -18,6 +18,7 @@ import { logAndSanitizeError } from '@/lib/error-utils';
 
 const emptyItem = (): ItemFormData => ({ itemType: undefined as any, language: null });
 
+// Client-side normalization mirroring the backend logic
 const STOP_WORDS = ['school', 'schools', 'academy', 'academies', 'comprehensive', 'primary', 'nursery', 'preparatory', 'prep', 'college', 'institute', 'institution', 'centre', 'center', 'learning'];
 
 function normalizeSchoolName(name: string): string {
@@ -27,9 +28,10 @@ function normalizeSchoolName(name: string): string {
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
-  'Pre-Primary': 'bg-amber-100 text-amber-800 border-amber-200',
-  'Lower Primary': 'bg-blue-100 text-blue-800 border-blue-200',
+  'Pre School': 'bg-amber-100 text-amber-800 border-amber-200',
+  'Lower Grade': 'bg-blue-100 text-blue-800 border-blue-200',
   'Primary': 'bg-emerald-100 text-emerald-800 border-emerald-200',
+  'Junior School': 'bg-purple-100 text-purple-800 border-purple-200',
 };
 
 function RegisteredSchoolsList({ schools, search }: { schools: { school_name: string; category: string }[]; search: string }) {
@@ -84,7 +86,9 @@ export default function SubmissionForm() {
   const [registeredSchools, setRegisteredSchools] = useState<{ school_name: string; category: string }[]>([]);
   const [schoolSearch, setSchoolSearch] = useState('');
   
+  // Honeypot field for spam protection (should remain empty)
   const honeypotRef = useRef<HTMLInputElement>(null);
+  // Track form load time for timing-based protection
   const formLoadTime = useRef(Date.now());
 
   const [form, setForm] = useState<SubmissionFormData>({
@@ -95,6 +99,7 @@ export default function SubmissionForm() {
     items: [emptyItem()],
   });
 
+  // Find categories already registered for the typed school name
   const registeredCategories = useMemo(() => {
     const typed = form.schoolName.trim();
     if (typed.length < 3 || registeredSchools.length === 0) return [];
@@ -105,8 +110,9 @@ export default function SubmissionForm() {
       .map(s => s.category);
   }, [form.schoolName, registeredSchools]);
 
-  const allCategoriesFilled = registeredCategories.length >= 3;
+  const allCategoriesFilled = registeredCategories.length >= 4;
 
+  // Live duplicate detection - checks same school name AND same category
   const duplicateMatch = useMemo(() => {
     const typed = form.schoolName.trim();
     if (typed.length < 3 || registeredSchools.length === 0 || !form.category) return null;
@@ -123,6 +129,7 @@ export default function SubmissionForm() {
         if (data) setSubmissionsOpen(data.value === 'true');
         setLoading(false);
       });
+    // Fetch registered schools
     supabase.rpc('get_registered_school_names').then(({ data }) => {
       if (data) setRegisteredSchools(data);
     });
@@ -146,12 +153,14 @@ export default function SubmissionForm() {
     e.preventDefault();
     setErrors({});
 
+    // Honeypot check - if filled, silently reject (bot detection)
     if (honeypotRef.current?.value) {
       await new Promise(resolve => setTimeout(resolve, 1500));
       navigate('/confirmation', { state: { school: { school_name: form.schoolName }, items: [] } });
       return;
     }
 
+    // Timing check - submissions faster than 3 seconds are likely bots
     const timeSpent = Date.now() - formLoadTime.current;
     if (timeSpent < 3000) {
       toast({ title: 'Please slow down', description: 'Please take your time filling out the form.', variant: 'destructive' });
@@ -170,6 +179,16 @@ export default function SubmissionForm() {
       return;
     }
 
+    // Check for Play items missing language
+    for (let i = 0; i < form.items.length; i++) {
+      if (form.items[i].itemType === 'Play' && !form.items[i].language) {
+        setErrors(prev => ({ ...prev, [`items.${i}.language`]: 'Language is required for Play items' }));
+        toast({ title: 'Validation Error', description: 'Language is required for Play items.', variant: 'destructive' });
+        return;
+      }
+    }
+
+    // Show confirmation dialog instead of submitting directly
     setShowConfirm(true);
   };
 
@@ -190,12 +209,18 @@ export default function SubmissionForm() {
         },
       });
 
-      if (error) throw new Error(error.message || 'Submission failed');
+      if (error) {
+        throw new Error(error.message || 'Submission failed');
+      }
+
       if (!data.success) {
-        if (data.error?.includes('already registered')) setErrors({ schoolName: data.error });
+        if (data.error?.includes('already registered')) {
+          setErrors({ schoolName: data.error });
+        }
         throw new Error(data.error || 'Submission failed');
       }
 
+      // Refresh registered schools list
       const { data: updatedSchools } = await supabase.rpc('get_registered_school_names');
       if (updatedSchools) setRegisteredSchools(updatedSchools);
 
@@ -204,8 +229,13 @@ export default function SubmissionForm() {
       });
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : '';
+      
       if (errorMessage.includes('Too many submissions')) {
-        toast({ title: 'Rate Limited', description: 'Too many submissions from your location. Please try again in an hour.', variant: 'destructive' });
+        toast({ 
+          title: 'Rate Limited', 
+          description: 'Too many submissions from your location. Please try again in an hour.', 
+          variant: 'destructive' 
+        });
       } else {
         toast({ title: 'Submission Failed', description: logAndSanitizeError(err, 'general', 'Submission error'), variant: 'destructive' });
       }
@@ -239,6 +269,7 @@ export default function SubmissionForm() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Header */}
       <header className="bg-primary text-primary-foreground py-6 px-4 relative overflow-hidden">
         <div className="max-w-6xl mx-auto relative z-10">
           <Link to="/" className="inline-flex items-center gap-1 text-sm opacity-80 hover:opacity-100 mb-3 transition-opacity duration-200">
@@ -257,8 +288,10 @@ export default function SubmissionForm() {
 
       <main className="max-w-6xl mx-auto px-4 py-8">
         <div className="flex flex-col lg:flex-row gap-6">
+          {/* Left: Registration Form */}
           <div className="flex-1 max-w-2xl">
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Section A: School Details */}
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
@@ -280,7 +313,7 @@ export default function SubmissionForm() {
                       <div className="flex items-start gap-2 p-2.5 rounded-md bg-destructive/10 border border-destructive/30 text-destructive">
                         <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
                         <p className="text-sm">
-                          This school has already registered in all 3 categories. No more submissions can be made.
+                          This school has already registered in all 4 categories. No more submissions can be made.
                         </p>
                       </div>
                     )}
@@ -347,6 +380,7 @@ export default function SubmissionForm() {
                 </CardContent>
               </Card>
 
+              {/* Section B: Item Registration */}
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
@@ -397,10 +431,17 @@ export default function SubmissionForm() {
                 </CardContent>
               </Card>
 
-              {/* Honeypot */}
+              {/* Honeypot field - hidden from users, catches bots */}
               <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0, overflow: 'hidden' }}>
                 <label htmlFor="website">Website</label>
-                <input ref={honeypotRef} type="text" id="website" name="website" tabIndex={-1} autoComplete="off" />
+                <input
+                  ref={honeypotRef}
+                  type="text"
+                  id="website"
+                  name="website"
+                  tabIndex={-1}
+                  autoComplete="off"
+                />
               </div>
 
               <Button 
@@ -414,6 +455,7 @@ export default function SubmissionForm() {
             </form>
           </div>
 
+          {/* Right: Registered Schools Sidebar */}
           <aside className="lg:w-80 w-full lg:sticky lg:top-8 lg:self-start order-first lg:order-last">
             <Card>
               <CardHeader className="pb-3">
@@ -437,7 +479,10 @@ export default function SubmissionForm() {
                         className="pl-9 h-9 text-sm"
                       />
                     </div>
-                    <RegisteredSchoolsList schools={registeredSchools} search={schoolSearch} />
+                    <RegisteredSchoolsList
+                      schools={registeredSchools}
+                      search={schoolSearch}
+                    />
                   </>
                 ) : (
                   <p className="text-sm text-muted-foreground text-center py-4">No schools registered yet. Be the first!</p>

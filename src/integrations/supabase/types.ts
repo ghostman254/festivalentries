@@ -166,20 +166,27 @@ export type Database = {
         | "Under Review"
         | "Adjudicated"
       item_type:
-        | "Dramatized Singing Games"
-        | "Dramatized Verse (Solo)"
-        | "Dramatized Verse (Choral)"
-        | "Dramatized Solo Verse"
-        | "Film for Early Years"
+        | "Choral Verse"
         | "Play"
+        | "Spoken Word"
+        | "Solo Verse"
+        | "Modern Dance"
+        | "Comedy"
+        | "Live Broadcast"
+        | "Podcast"
+        | "Singing Games"
+        | "Narratives"
         | "Cultural Creative Dance"
-        | "Modern Creative Dance"
-        | "Narrative"
-        | "Film"
-        | "Play in Kenyan Sign Language"
-        | "Dramatized Dance for Special Needs (Mentally Handicapped)"
-        | "Dramatized Dance for Special Needs (Physically Handicapped)"
-      school_category: "Pre-Primary" | "Lower Primary" | "Primary"
+        | "Video Song"
+        | "Documentary"
+        | "Advert"
+        | "Features"
+        | "Screen Solo"
+      school_category:
+        | "Pre School"
+        | "Lower Grade"
+        | "Primary"
+        | "Junior School"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -315,21 +322,29 @@ export const Constants = {
         "Adjudicated",
       ],
       item_type: [
-        "Dramatized Singing Games",
-        "Dramatized Verse (Solo)",
-        "Dramatized Verse (Choral)",
-        "Dramatized Solo Verse",
-        "Film for Early Years",
+        "Choral Verse",
         "Play",
+        "Spoken Word",
+        "Solo Verse",
+        "Modern Dance",
+        "Comedy",
+        "Live Broadcast",
+        "Podcast",
+        "Singing Games",
+        "Narratives",
         "Cultural Creative Dance",
-        "Modern Creative Dance",
-        "Narrative",
-        "Film",
-        "Play in Kenyan Sign Language",
-        "Dramatized Dance for Special Needs (Mentally Handicapped)",
-        "Dramatized Dance for Special Needs (Physically Handicapped)",
+        "Video Song",
+        "Documentary",
+        "Advert",
+        "Features",
+        "Screen Solo",
       ],
-      school_category: ["Pre-Primary", "Lower Primary", "Primary"],
+      school_category: [
+        "Pre School",
+        "Lower Grade",
+        "Primary",
+        "Junior School",
+      ],
     },
   },
 } as const

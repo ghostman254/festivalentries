@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Info } from 'lucide-react';
+import { Clock, Users, Info } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { SCHOOL_CATEGORIES } from '@/lib/constants';
@@ -15,11 +15,11 @@ export default function RegulationsSection() {
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-10">
           <h2 className="text-2xl sm:text-3xl font-heading font-bold text-foreground mb-4">
-            Available Items by Category
+            Performance Regulations
           </h2>
           <div className="w-16 h-1 bg-secondary mx-auto rounded-full mb-4"></div>
           <p className="text-muted-foreground max-w-xl mx-auto text-sm">
-            Each category has specific items available for registration. Select a category to view its items.
+            Each category has specific items with time and cast limits. Select a category to view its regulations.
           </p>
         </div>
 
@@ -41,21 +41,60 @@ export default function RegulationsSection() {
           ))}
         </div>
 
-        {/* Items Grid */}
+        {/* Regulations Table */}
         <Card className="overflow-hidden">
-          <CardContent className="p-6">
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {regulations.map((reg) => (
-                <div
-                  key={reg.itemType}
-                  className="flex items-center gap-3 p-3 rounded-lg border border-border bg-card hover:bg-muted/50 transition-colors"
-                >
-                  <Badge variant="secondary" className="font-mono text-xs shrink-0">
-                    {reg.itemCode}
-                  </Badge>
-                  <span className="font-medium text-foreground text-sm">{reg.itemType}</span>
-                </div>
-              ))}
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-primary/5 border-b border-border">
+                    <th className="text-left py-3 px-4 text-sm font-heading font-semibold text-foreground">
+                      Item
+                    </th>
+                    <th className="text-center py-3 px-4 text-sm font-heading font-semibold text-foreground">
+                      <span className="inline-flex items-center gap-1.5">
+                        <Clock className="h-4 w-4" />
+                        Max Time
+                      </span>
+                    </th>
+                    <th className="text-center py-3 px-4 text-sm font-heading font-semibold text-foreground">
+                      <span className="inline-flex items-center gap-1.5">
+                        <Users className="h-4 w-4" />
+                        Max Cast
+                      </span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {regulations.map((reg, idx) => (
+                    <tr 
+                      key={reg.itemType} 
+                      className={cn(
+                        "border-b border-border last:border-0 transition-colors hover:bg-muted/50",
+                        idx % 2 === 0 ? "bg-card" : "bg-muted/20"
+                      )}
+                    >
+                      <td className="py-3 px-4">
+                        <span className="font-medium text-foreground text-sm">{reg.itemType}</span>
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <Badge variant="outline" className="font-mono text-xs">
+                          {reg.maxTime}
+                        </Badge>
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        {reg.maxCast !== null ? (
+                          <Badge variant="secondary" className="font-mono text-xs">
+                            {reg.maxCast}
+                          </Badge>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </CardContent>
         </Card>

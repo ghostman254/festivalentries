@@ -5,6 +5,8 @@ import {
   Theater, 
   Mic2, 
   Video, 
+  Radio, 
+  Podcast, 
   Sparkles,
   ArrowRight,
   CheckCircle2,
@@ -14,14 +16,12 @@ import {
   ClipboardList,
   Send,
   Tag,
-  School,
-  Film,
-  Accessibility
+  School
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { SCHOOL_CATEGORIES } from '@/lib/constants';
+import { ITEM_TYPES, SCHOOL_CATEGORIES } from '@/lib/constants';
 import CountdownTimer from '@/components/CountdownTimer';
 import heroBackground from '@/assets/hero-background.png';
 import creativeItemsBg from '@/assets/creative-items-bg.png';
@@ -29,48 +29,40 @@ import rulesBg from '@/assets/rules-bg.png';
 import aboutDoodles from '@/assets/about-doodles.png';
 import stepsDoodles from '@/assets/steps-doodles.png';
 import RegulationsSection from '@/components/RegulationsSection';
-import { CATEGORY_REGULATIONS } from '@/lib/regulations';
 
 const itemIcons: Record<string, React.ReactNode> = {
-  'Dramatized Singing Games': <Music className="h-6 w-6" />,
-  'Dramatized Verse (Solo)': <Mic2 className="h-6 w-6" />,
-  'Dramatized Verse (Choral)': <Music className="h-6 w-6" />,
-  'Dramatized Solo Verse': <Mic2 className="h-6 w-6" />,
-  'Film for Early Years': <Film className="h-6 w-6" />,
+  'Choral Verse': <Music className="h-6 w-6" />,
   'Play': <Theater className="h-6 w-6" />,
+  'Spoken Word': <Mic2 className="h-6 w-6" />,
+  'Solo Verse': <Mic2 className="h-6 w-6" />,
+  'Modern Dance': <Sparkles className="h-6 w-6" />,
+  'Comedy': <Theater className="h-6 w-6" />,
+  'Live Broadcast': <Radio className="h-6 w-6" />,
+  'Podcast': <Podcast className="h-6 w-6" />,
+  'Singing Games': <Music className="h-6 w-6" />,
+  'Narratives': <FileText className="h-6 w-6" />,
   'Cultural Creative Dance': <Sparkles className="h-6 w-6" />,
-  'Modern Creative Dance': <Sparkles className="h-6 w-6" />,
-  'Narrative': <FileText className="h-6 w-6" />,
-  'Film': <Film className="h-6 w-6" />,
-  'Play in Kenyan Sign Language': <Accessibility className="h-6 w-6" />,
-  'Dramatized Dance for Special Needs (Mentally Handicapped)': <Accessibility className="h-6 w-6" />,
-  'Dramatized Dance for Special Needs (Physically Handicapped)': <Accessibility className="h-6 w-6" />,
+  'Video Song': <Video className="h-6 w-6" />,
+  'Documentary': <Video className="h-6 w-6" />,
+  'Advert': <Video className="h-6 w-6" />,
 };
 
 const steps = [
   { step: 1, title: 'Click "Start Submission"', icon: <ArrowRight className="h-5 w-5" /> },
   { step: 2, title: 'Enter your school details', icon: <School className="h-5 w-5" /> },
-  { step: 3, title: 'Register your items', icon: <ClipboardList className="h-5 w-5" /> },
+  { step: 3, title: 'Register up to four (4) items', icon: <ClipboardList className="h-5 w-5" /> },
   { step: 4, title: 'Review and submit', icon: <Send className="h-5 w-5" /> },
 ];
 
 const rules = [
   'Submit as many items as you need',
-  'One submission per school per category',
+  'One submission per school',
   'All fields are mandatory',
   'Submissions close after the official deadline',
   'WhatsApp submissions will not be accepted',
 ];
 
 export default function Index() {
-  // Get all unique item types across categories for display
-  const allItems = new Map<string, string>();
-  Object.entries(CATEGORY_REGULATIONS).forEach(([_, regs]) => {
-    regs.forEach(r => {
-      if (!allItems.has(r.itemType)) allItems.set(r.itemType, r.itemCode);
-    });
-  });
-
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
@@ -100,7 +92,9 @@ export default function Index() {
         className="relative text-primary-foreground py-16 sm:py-24 px-4 overflow-hidden bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${heroBackground})` }}
       >
+        {/* Overlay for better text readability */}
         <div className="absolute inset-0 bg-black/20"></div>
+        
         <div className="max-w-4xl mx-auto text-center space-y-6 relative z-10">
           <Badge variant="secondary" className="mb-4 text-sm px-4 py-1">
             Official Submission Platform
@@ -131,13 +125,14 @@ export default function Index() {
         </div>
       </section>
 
-      {/* About & Who Can Submit */}
+      {/* About & Who Can Submit - Combined Section */}
       <section 
         className="py-16 px-4 relative bg-cover bg-center"
         style={{ backgroundImage: `url(${aboutDoodles})` }}
       >
         <div className="absolute inset-0 bg-background/90"></div>
         <div className="max-w-4xl mx-auto relative z-10 space-y-16">
+          {/* About the Portal */}
           <div>
             <div className="text-center mb-8">
               <h2 className="text-2xl sm:text-3xl font-heading font-bold text-foreground mb-4">
@@ -156,6 +151,7 @@ export default function Index() {
             </Card>
           </div>
 
+          {/* Who Can Submit */}
           <div>
             <div className="text-center mb-10">
               <h2 className="text-2xl sm:text-3xl font-heading font-bold text-foreground mb-4">
@@ -200,7 +196,7 @@ export default function Index() {
               </Card>
             </div>
             <p className="text-center text-muted-foreground mt-6 text-sm">
-              ⚠️ One submission per school per category
+              ⚠️ One submission per school only
             </p>
           </div>
         </div>
@@ -220,7 +216,7 @@ export default function Index() {
             <div className="w-16 h-1 bg-white/70 mx-auto rounded-full"></div>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {Array.from(allItems.entries()).map(([item, code]) => (
+            {ITEM_TYPES.map((item) => (
               <Card 
                 key={item} 
                 className="cursor-default bg-white/95 backdrop-blur-sm hover:shadow-lg transition-shadow duration-200"
@@ -230,7 +226,9 @@ export default function Index() {
                     {itemIcons[item] || <Sparkles className="h-6 w-6" />}
                   </div>
                   <p className="font-semibold text-foreground text-sm">{item}</p>
-                  <Badge variant="outline" className="mt-2 text-[10px] font-mono">{code}</Badge>
+                  {item === 'Play' && (
+                    <p className="text-xs text-muted-foreground mt-1">(English, French, German)</p>
+                  )}
                 </CardContent>
               </Card>
             ))}
@@ -245,13 +243,14 @@ export default function Index() {
         </div>
       </section>
 
-      {/* How to Submit & Item Codes */}
+      {/* How to Submit & Item Codes - Combined Section */}
       <section 
         className="py-16 px-4 relative bg-cover bg-center"
         style={{ backgroundImage: `url(${stepsDoodles})` }}
       >
         <div className="absolute inset-0 bg-background/90"></div>
         <div className="max-w-4xl mx-auto relative z-10 space-y-16">
+          {/* How to Submit */}
           <div>
             <div className="text-center mb-10">
               <h2 className="text-2xl sm:text-3xl font-heading font-bold text-foreground mb-4">
@@ -287,6 +286,7 @@ export default function Index() {
             </Card>
           </div>
 
+          {/* Item Codes */}
           <div>
             <div className="text-center mb-8">
               <h2 className="text-2xl sm:text-3xl font-heading font-bold text-foreground mb-4">
@@ -316,7 +316,7 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Available Items by Category */}
+      {/* Performance Regulations */}
       <RegulationsSection />
 
       {/* Rules Section */}
@@ -356,10 +356,12 @@ export default function Index() {
 
       {/* Final CTA */}
       <section className="relative py-20 px-4 bg-gradient-to-br from-primary via-primary to-primary/90 text-primary-foreground overflow-hidden">
+        {/* Static background elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-1/3 right-1/4 w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
           <div className="absolute bottom-1/3 left-1/4 w-64 h-64 bg-secondary/15 rounded-full blur-3xl"></div>
         </div>
+        
         <div className="max-w-3xl mx-auto text-center space-y-6 relative z-10">
           <GraduationCap className="h-16 w-16 mx-auto opacity-90 animate-float" />
           <h2 className="text-2xl sm:text-3xl font-heading font-bold animate-fade-in-up">
@@ -389,6 +391,15 @@ export default function Index() {
           <p className="text-sm text-muted-foreground">
             Official platform for school creative performance item registration
           </p>
+          <div className="mt-4 flex items-center justify-center gap-4">
+            <Link to="/submit" className="text-sm text-primary hover:underline">
+              Submit Items
+            </Link>
+            <span className="text-muted-foreground">•</span>
+            <Link to="/admin/login" className="text-sm text-muted-foreground hover:text-foreground">
+              Admin Login
+            </Link>
+          </div>
         </div>
       </footer>
     </div>
