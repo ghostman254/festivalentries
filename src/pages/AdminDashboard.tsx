@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GraduationCap, LogOut, Download, Filter, ChevronDown, ChevronUp, UserPlus, Users, Trash2, Search, KeyRound, TrendingUp, Clock, BarChart3 } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -398,22 +398,17 @@ export default function AdminDashboard() {
     return Object.entries(counts).map(([name, value]) => ({ name, value }));
   }, [schools]);
 
-  // Registration timeline (last 14 days)
-  const timelineData = useMemo(() => {
-    const days: Record<string, number> = {};
-    for (let i = 13; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      days[d.toISOString().split('T')[0]] = 0;
-    }
-    schools.forEach(s => {
-      const day = new Date(s.created_at).toISOString().split('T')[0];
-      if (days[day] !== undefined) days[day]++;
-    });
-    return Object.entries(days).map(([date, count]) => ({
-      date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      registrations: count,
-    }));
+  // Top schools by item count
+  const topSchoolsData = useMemo(() => {
+    return [...schools]
+      .sort((a, b) => b.items.length - a.items.length)
+      .slice(0, 8)
+      .map(s => ({
+        name: s.school_name.length > 20 ? s.school_name.slice(0, 18) + '…' : s.school_name,
+        fullName: s.school_name,
+        items: s.items.length,
+        category: s.category,
+      }));
   }, [schools]);
 
   const PIE_COLORS = ['#3b82f6', '#f59e0b', '#10b981', '#8b5cf6', '#ef4444', '#06b6d4', '#ec4899', '#84cc16', '#f97316', '#6366f1', '#14b8a6', '#a855f7', '#e11d48', '#0ea5e9', '#eab308', '#22c55e'];
@@ -576,21 +571,23 @@ export default function AdminDashboard() {
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base">Registration Timeline</CardTitle>
-              <CardDescription className="text-xs">Daily school registrations over the last 14 days</CardDescription>
+              <CardTitle className="text-base">Top Schools by Items</CardTitle>
+              <CardDescription className="text-xs">Schools with the most registered items</CardDescription>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={260}>
-                <LineChart data={timelineData} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+                <BarChart data={topSchoolsData} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis dataKey="date" tick={{ fontSize: 10 }} className="fill-muted-foreground" interval="preserveStartEnd" />
-                  <YAxis allowDecimals={false} tick={{ fontSize: 11 }} className="fill-muted-foreground" />
+                  <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} className="fill-muted-foreground" />
+                  <YAxis dataKey="name" type="category" width={120} tick={{ fontSize: 10 }} className="fill-muted-foreground" />
                   <Tooltip
                     contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px', fontSize: '13px' }}
                     labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 600 }}
+                    formatter={(value: number, _name: string, props: any) => [`${value} items`, props.payload.fullName]}
+                    labelFormatter={() => ''}
                   />
-                  <Line type="monotone" dataKey="registrations" name="Registrations" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
-                </LineChart>
+                  <Bar dataKey="items" name="Items" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+                </BarChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
