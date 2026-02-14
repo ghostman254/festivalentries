@@ -166,27 +166,20 @@ export type Database = {
         | "Under Review"
         | "Adjudicated"
       item_type:
-        | "Choral Verse"
+        | "Dramatized Singing Games"
+        | "Dramatized Verse (Solo)"
+        | "Dramatized Verse (Choral)"
+        | "Dramatized Solo Verse"
+        | "Film for Early Years"
         | "Play"
-        | "Spoken Word"
-        | "Solo Verse"
-        | "Modern Dance"
-        | "Comedy"
-        | "Live Broadcast"
-        | "Podcast"
-        | "Singing Games"
-        | "Narratives"
         | "Cultural Creative Dance"
-        | "Video Song"
-        | "Documentary"
-        | "Advert"
-        | "Features"
-        | "Screen Solo"
-      school_category:
-        | "Pre School"
-        | "Lower Grade"
-        | "Primary"
-        | "Junior School"
+        | "Modern Creative Dance"
+        | "Narrative"
+        | "Film"
+        | "Play in Kenyan Sign Language"
+        | "Dramatized Dance for Special Needs (Mentally Handicapped)"
+        | "Dramatized Dance for Special Needs (Physically Handicapped)"
+      school_category: "Pre-Primary" | "Lower Primary" | "Primary"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -322,29 +315,21 @@ export const Constants = {
         "Adjudicated",
       ],
       item_type: [
-        "Choral Verse",
+        "Dramatized Singing Games",
+        "Dramatized Verse (Solo)",
+        "Dramatized Verse (Choral)",
+        "Dramatized Solo Verse",
+        "Film for Early Years",
         "Play",
-        "Spoken Word",
-        "Solo Verse",
-        "Modern Dance",
-        "Comedy",
-        "Live Broadcast",
-        "Podcast",
-        "Singing Games",
-        "Narratives",
         "Cultural Creative Dance",
-        "Video Song",
-        "Documentary",
-        "Advert",
-        "Features",
-        "Screen Solo",
+        "Modern Creative Dance",
+        "Narrative",
+        "Film",
+        "Play in Kenyan Sign Language",
+        "Dramatized Dance for Special Needs (Mentally Handicapped)",
+        "Dramatized Dance for Special Needs (Physically Handicapped)",
       ],
-      school_category: [
-        "Pre School",
-        "Lower Grade",
-        "Primary",
-        "Junior School",
-      ],
+      school_category: ["Pre-Primary", "Lower Primary", "Primary"],
     },
   },
 } as const

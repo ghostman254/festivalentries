@@ -2,78 +2,41 @@ import type { ItemFormData } from './validation';
 
 export interface ItemRegulation {
   itemType: string;
-  maxTime: string;
+  itemCode: string;
+  maxTime: string | null;
   maxCast: number | null;
 }
 
 /**
- * Mapping of school categories to their allowed items with time/cast regulations.
+ * Mapping of school categories to their allowed items with codes.
  * 
- * Category mapping:
- * - Pre School → Pre-Primary (from regulation tables)
- * - Lower Grade → Primary (from regulation tables)
- * - Primary → Primary (from regulation tables)
- * - Junior School → Junior School (from regulation tables)
+ * Category A: Early Years Education (EYE)
+ *   - Pre-Primary (ages 4-5)
+ *   - Lower Primary (ages 6-8)
+ * Category B: Primary Schools
  */
 export const CATEGORY_REGULATIONS: Record<string, ItemRegulation[]> = {
-  'Pre School': [
-    { itemType: 'Solo Verse', maxTime: '4 min', maxCast: 2 },
-    { itemType: 'Choral Verse', maxTime: '4 min', maxCast: 16 },
-    { itemType: 'Singing Games', maxTime: '5 min', maxCast: 20 },
-    { itemType: 'Podcast', maxTime: '10 min', maxCast: null },
-    { itemType: 'Documentary', maxTime: '10 min', maxCast: null },
-    { itemType: 'Advert', maxTime: '5 min', maxCast: null },
-    { itemType: 'Features', maxTime: '10 min', maxCast: null },
-    { itemType: 'Screen Solo', maxTime: '5 min', maxCast: 2 },
+  'Pre-Primary': [
+    { itemType: 'Dramatized Singing Games', itemCode: 'A1', maxTime: null, maxCast: null },
+    { itemType: 'Dramatized Verse (Solo)', itemCode: 'A2', maxTime: null, maxCast: null },
+    { itemType: 'Dramatized Verse (Choral)', itemCode: 'A3', maxTime: null, maxCast: null },
   ],
-  'Lower Grade': [
-    { itemType: 'Play', maxTime: '15 min', maxCast: 20 },
-    { itemType: 'Solo Verse', maxTime: '6 min', maxCast: 2 },
-    { itemType: 'Choral Verse', maxTime: '6 min', maxCast: 18 },
-    { itemType: 'Singing Games', maxTime: '5 min', maxCast: 20 },
-    { itemType: 'Narratives', maxTime: '5 min', maxCast: 4 },
-    { itemType: 'Modern Dance', maxTime: '7 min', maxCast: 9 },
-    { itemType: 'Cultural Creative Dance', maxTime: '7 min', maxCast: 30 },
-    { itemType: 'Live Broadcast', maxTime: '5 min', maxCast: 2 },
-    { itemType: 'Video Song', maxTime: '10 min', maxCast: null },
-    { itemType: 'Podcast', maxTime: '10 min', maxCast: null },
-    { itemType: 'Documentary', maxTime: '10 min', maxCast: null },
-    { itemType: 'Advert', maxTime: '5 min', maxCast: null },
-    { itemType: 'Features', maxTime: '10 min', maxCast: null },
-    { itemType: 'Screen Solo', maxTime: '5 min', maxCast: 2 },
+  'Lower Primary': [
+    { itemType: 'Dramatized Verse (Choral)', itemCode: 'A3', maxTime: null, maxCast: null },
+    { itemType: 'Dramatized Solo Verse', itemCode: 'A4', maxTime: null, maxCast: null },
+    { itemType: 'Film for Early Years', itemCode: 'A5', maxTime: null, maxCast: null },
   ],
   'Primary': [
-    { itemType: 'Play', maxTime: '15 min', maxCast: 20 },
-    { itemType: 'Solo Verse', maxTime: '6 min', maxCast: 2 },
-    { itemType: 'Choral Verse', maxTime: '6 min', maxCast: 18 },
-    { itemType: 'Singing Games', maxTime: '5 min', maxCast: 20 },
-    { itemType: 'Narratives', maxTime: '5 min', maxCast: 4 },
-    { itemType: 'Modern Dance', maxTime: '7 min', maxCast: 9 },
-    { itemType: 'Cultural Creative Dance', maxTime: '7 min', maxCast: 30 },
-    { itemType: 'Live Broadcast', maxTime: '5 min', maxCast: 2 },
-    { itemType: 'Video Song', maxTime: '10 min', maxCast: null },
-    { itemType: 'Podcast', maxTime: '10 min', maxCast: null },
-    { itemType: 'Documentary', maxTime: '10 min', maxCast: null },
-    { itemType: 'Advert', maxTime: '5 min', maxCast: null },
-    { itemType: 'Features', maxTime: '10 min', maxCast: null },
-    { itemType: 'Screen Solo', maxTime: '5 min', maxCast: 2 },
-  ],
-  'Junior School': [
-    { itemType: 'Play', maxTime: '35 min', maxCast: 25 },
-    { itemType: 'Solo Verse', maxTime: '6 min', maxCast: 2 },
-    { itemType: 'Choral Verse', maxTime: '6 min', maxCast: 18 },
-    { itemType: 'Spoken Word', maxTime: '5 min', maxCast: 2 },
-    { itemType: 'Narratives', maxTime: '5 min', maxCast: 4 },
-    { itemType: 'Modern Dance', maxTime: '7 min', maxCast: 9 },
-    { itemType: 'Cultural Creative Dance', maxTime: '12 min', maxCast: 35 },
-    { itemType: 'Comedy', maxTime: '5 min', maxCast: 2 },
-    { itemType: 'Live Broadcast', maxTime: '5 min', maxCast: 2 },
-    { itemType: 'Video Song', maxTime: '10 min', maxCast: null },
-    { itemType: 'Podcast', maxTime: '10 min', maxCast: null },
-    { itemType: 'Documentary', maxTime: '10 min', maxCast: null },
-    { itemType: 'Advert', maxTime: '5 min', maxCast: null },
-    { itemType: 'Features', maxTime: '10 min', maxCast: null },
-    { itemType: 'Screen Solo', maxTime: '5 min', maxCast: 2 },
+    { itemType: 'Play', itemCode: 'B1', maxTime: null, maxCast: null },
+    { itemType: 'Cultural Creative Dance', itemCode: 'B2', maxTime: null, maxCast: null },
+    { itemType: 'Modern Creative Dance', itemCode: 'B3', maxTime: null, maxCast: null },
+    { itemType: 'Dramatized Verse (Solo)', itemCode: 'B4', maxTime: null, maxCast: null },
+    { itemType: 'Dramatized Verse (Choral)', itemCode: 'B5', maxTime: null, maxCast: null },
+    { itemType: 'Narrative', itemCode: 'B6', maxTime: null, maxCast: null },
+    { itemType: 'Film', itemCode: 'B7', maxTime: null, maxCast: null },
+    { itemType: 'Play in Kenyan Sign Language', itemCode: 'B8', maxTime: null, maxCast: null },
+    { itemType: 'Dramatized Dance for Special Needs (Mentally Handicapped)', itemCode: 'B9', maxTime: null, maxCast: null },
+    { itemType: 'Dramatized Dance for Special Needs (Physically Handicapped)', itemCode: 'B10', maxTime: null, maxCast: null },
   ],
 };
 
