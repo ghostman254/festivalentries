@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Send, School, GraduationCap, User, Phone, Music } from 'lucide-react';
+import { Send, School, GraduationCap, User, Phone } from 'lucide-react';
 import type { SubmissionFormData } from '@/lib/validation';
 import { getItemRegulation } from '@/lib/regulations';
 
@@ -28,7 +28,6 @@ export function SubmissionConfirmDialog({ open, onOpenChange, form, onConfirm, s
         </DialogHeader>
 
         <div className="space-y-4 py-2">
-          {/* School Details */}
           <div className="space-y-2 rounded-lg border border-border bg-muted/30 p-3">
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">School Details</p>
             <div className="space-y-1.5 text-sm">
@@ -51,7 +50,6 @@ export function SubmissionConfirmDialog({ open, onOpenChange, form, onConfirm, s
             </div>
           </div>
 
-          {/* Items */}
           <div className="space-y-2 rounded-lg border border-border bg-muted/30 p-3">
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Items ({form.items.length})
@@ -65,11 +63,8 @@ export function SubmissionConfirmDialog({ open, onOpenChange, form, onConfirm, s
                       {idx + 1}
                     </span>
                     <span className="font-medium">{item.itemType}</span>
-                    {item.language && (
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0">{item.language}</Badge>
-                    )}
-                    {reg && (
-                      <span className="text-[10px] text-muted-foreground ml-auto">{reg.maxTime}</span>
+                    {reg?.itemCode && (
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 ml-auto">{reg.itemCode}</Badge>
                     )}
                   </div>
                 );

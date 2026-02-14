@@ -15,7 +15,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { logAndSanitizeError } from '@/lib/error-utils';
-import { SCHOOL_CATEGORIES, ITEM_TYPES } from '@/lib/constants';
+import { SCHOOL_CATEGORIES } from '@/lib/constants';
+import { CATEGORY_REGULATIONS } from '@/lib/regulations';
 import type { Session } from '@supabase/supabase-js';
 import { z } from 'zod';
 
@@ -578,26 +579,31 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2.5">
-              {ITEM_TYPES.map((type, index) => {
-                const count = itemTypeData.find(d => d.name === type)?.count || 0;
-                const maxCount = Math.max(...itemTypeData.map(d => d.count), 1);
-                const percentage = totalItems > 0 ? (count / totalItems) * 100 : 0;
-                const barWidth = maxCount > 0 ? (count / maxCount) * 100 : 0;
-                const color = PIE_COLORS[index % PIE_COLORS.length];
-                return (
-                  <div key={type} className="flex items-center gap-3">
-                    <span className="text-xs text-muted-foreground w-[130px] shrink-0 truncate" title={type}>{type}</span>
-                    <div className="flex-1 h-6 bg-muted rounded-md overflow-hidden relative">
-                      <div
-                        className="h-full rounded-md transition-all duration-500 ease-out"
-                        style={{ width: `${barWidth}%`, backgroundColor: color, minWidth: count > 0 ? '4px' : '0' }}
-                      />
+              {/* Get all unique item types from regulations */}
+              {(() => {
+                const allItemTypes = new Set<string>();
+                Object.values(CATEGORY_REGULATIONS).forEach(regs => regs.forEach(r => allItemTypes.add(r.itemType)));
+                return Array.from(allItemTypes).map((type, index) => {
+                  const count = itemTypeData.find(d => d.name === type)?.count || 0;
+                  const maxCount = Math.max(...itemTypeData.map(d => d.count), 1);
+                  const percentage = totalItems > 0 ? (count / totalItems) * 100 : 0;
+                  const barWidth = maxCount > 0 ? (count / maxCount) * 100 : 0;
+                  const color = PIE_COLORS[index % PIE_COLORS.length];
+                  return (
+                    <div key={type} className="flex items-center gap-3">
+                      <span className="text-xs text-muted-foreground w-[180px] shrink-0 truncate" title={type}>{type}</span>
+                      <div className="flex-1 h-6 bg-muted rounded-md overflow-hidden relative">
+                        <div
+                          className="h-full rounded-md transition-all duration-500 ease-out"
+                          style={{ width: `${barWidth}%`, backgroundColor: color, minWidth: count > 0 ? '4px' : '0' }}
+                        />
+                      </div>
+                      <span className="text-xs font-semibold text-foreground w-8 text-right">{count}</span>
+                      <span className="text-xs text-muted-foreground w-10 text-right">{percentage.toFixed(0)}%</span>
                     </div>
-                    <span className="text-xs font-semibold text-foreground w-8 text-right">{count}</span>
-                    <span className="text-xs text-muted-foreground w-10 text-right">{percentage.toFixed(0)}%</span>
-                  </div>
-                );
-              })}
+                  );
+                });
+              })()}
             </div>
           </CardContent>
         </Card>
@@ -644,9 +650,13 @@ export default function AdminDashboard() {
                   </SelectTrigger>
                   <SelectContent className="bg-popover z-50">
                     <SelectItem value="all">All Types</SelectItem>
-                    {ITEM_TYPES.map(t => (
-                      <SelectItem key={t} value={t}>{t}</SelectItem>
-                    ))}
+                    {(() => {
+                      const allTypes = new Set<string>();
+                      Object.values(CATEGORY_REGULATIONS).forEach(regs => regs.forEach(r => allTypes.add(r.itemType)));
+                      return Array.from(allTypes).map(t => (
+                        <SelectItem key={t} value={t}>{t}</SelectItem>
+                      ));
+                    })()}
                   </SelectContent>
                 </Select>
               </div>

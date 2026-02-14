@@ -1,27 +1,23 @@
 export const SCHOOL_CATEGORIES = [
-  'Pre School',
-  'Lower Grade',
+  'Pre-Primary',
+  'Lower Primary',
   'Primary',
-  'Junior School',
 ] as const;
 
 export const ITEM_TYPES = [
-  'Choral Verse',
+  'Dramatized Singing Games',
+  'Dramatized Verse (Solo)',
+  'Dramatized Verse (Choral)',
+  'Dramatized Solo Verse',
+  'Film for Early Years',
   'Play',
-  'Spoken Word',
-  'Solo Verse',
-  'Modern Dance',
-  'Comedy',
-  'Live Broadcast',
-  'Podcast',
-  'Singing Games',
-  'Narratives',
   'Cultural Creative Dance',
-  'Video Song',
-  'Documentary',
-  'Advert',
-  'Features',
-  'Screen Solo',
+  'Modern Creative Dance',
+  'Narrative',
+  'Film',
+  'Play in Kenyan Sign Language',
+  'Dramatized Dance for Special Needs (Mentally Handicapped)',
+  'Dramatized Dance for Special Needs (Physically Handicapped)',
 ] as const;
 
 export const LANGUAGES = ['English', 'French', 'German'] as const;
@@ -29,10 +25,9 @@ export const LANGUAGES = ['English', 'French', 'German'] as const;
 export const MAX_ITEMS = 20;
 
 export const CATEGORY_ABBREVIATIONS: Record<string, string> = {
-  'Pre School': 'PRE',
-  'Lower Grade': 'LGR',
+  'Pre-Primary': 'PPR',
+  'Lower Primary': 'LPR',
   'Primary': 'PRI',
-  'Junior School': 'JSC',
 };
 
 /**
