@@ -5,18 +5,26 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { CATEGORY_REGULATIONS, getItemRegulation } from '@/lib/regulations';
+import { getItemRegulation } from '@/lib/regulations';
 import { supabase } from '@/integrations/supabase/client';
+
+interface ProgramItem {
+  itemType: string;
+  itemCode: string;
+  schoolName: string;
+  category: string;
+}
 
 interface ScheduleSlot {
   startTime: string;
   endTime: string;
   item: string;
   code: string;
+  itemCode: string;
+  schoolName: string;
   category: string;
   duration: number;
   maxCast: number | null;
-  count: number; // how many schools performing this item
 }
 
 const INTERVAL_MINUTES = 3;
@@ -24,9 +32,7 @@ const INTERVAL_MINUTES = 3;
 function addMinutes(time: string, minutes: number): string {
   const [h, m] = time.split(':').map(Number);
   const total = h * 60 + m + minutes;
-  const newH = Math.floor(total / 60);
-  const newM = total % 60;
-  return `${String(newH).padStart(2, '0')}:${String(newM).padStart(2, '0')}`;
+  return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
 }
 
 function parseDuration(maxTime: string | null): number {
@@ -42,40 +48,26 @@ function formatTime(time: string): string {
   return `${displayH}:${String(m).padStart(2, '0')} ${suffix}`;
 }
 
-interface ItemCount {
-  itemType: string;
-  category: string;
-  count: number;
-}
-
-function buildScheduleFromCounts(
-  itemCounts: ItemCount[],
-  startTime: string
-): ScheduleSlot[] {
+function buildSchedule(items: ProgramItem[], startTime: string): ScheduleSlot[] {
   const slots: ScheduleSlot[] = [];
   let current = startTime;
 
-  for (const { itemType, category, count } of itemCounts) {
-    const reg = getItemRegulation(category, itemType);
-    if (!reg) continue;
-
-    const duration = parseDuration(reg.maxTime);
-
-    // Each submission gets its own time slot
-    for (let i = 0; i < count; i++) {
-      const end = addMinutes(current, duration);
-      slots.push({
-        startTime: current,
-        endTime: end,
-        item: reg.itemType,
-        code: reg.code,
-        category,
-        duration,
-        maxCast: reg.maxCast,
-        count,
-      });
-      current = addMinutes(end, INTERVAL_MINUTES);
-    }
+  for (const item of items) {
+    const reg = getItemRegulation(item.category, item.itemType);
+    const duration = parseDuration(reg?.maxTime ?? null);
+    const end = addMinutes(current, duration);
+    slots.push({
+      startTime: current,
+      endTime: end,
+      item: item.itemType,
+      code: reg?.code || '',
+      itemCode: item.itemCode,
+      schoolName: item.schoolName,
+      category: item.category,
+      duration,
+      maxCast: reg?.maxCast ?? null,
+    });
+    current = addMinutes(end, INTERVAL_MINUTES);
   }
 
   return slots;
@@ -90,9 +82,9 @@ const categoryColors: Record<string, string> = {
 function ScheduleTable({ slots, hallName, description }: { slots: ScheduleSlot[]; hallName: string; description: string }) {
   const totalDuration = slots.length > 0
     ? (() => {
-        const lastSlot = slots[slots.length - 1];
         const [sh, sm] = slots[0].startTime.split(':').map(Number);
-        const [eh, em] = lastSlot.endTime.split(':').map(Number);
+        const last = slots[slots.length - 1];
+        const [eh, em] = last.endTime.split(':').map(Number);
         return (eh * 60 + em) - (sh * 60 + sm);
       })()
     : 0;
@@ -124,6 +116,7 @@ function ScheduleTable({ slots, hallName, description }: { slots: ScheduleSlot[]
                   <th className="text-left py-3 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Time</th>
                   <th className="text-left py-3 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Code</th>
                   <th className="text-left py-3 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Item</th>
+                  <th className="text-left py-3 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">School</th>
                   <th className="text-center py-3 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Duration</th>
                   <th className="text-center py-3 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     <span className="inline-flex items-center gap-1"><Users className="h-3 w-3" />Max Cast</span>
@@ -134,7 +127,7 @@ function ScheduleTable({ slots, hallName, description }: { slots: ScheduleSlot[]
               <tbody>
                 {slots.map((slot, idx) => (
                   <tr
-                    key={`${slot.code}-${idx}`}
+                    key={`${slot.itemCode}-${idx}`}
                     className={cn(
                       "border-b border-border last:border-0 transition-colors hover:bg-muted/50",
                       idx % 2 === 0 ? "bg-card" : "bg-muted/20"
@@ -152,6 +145,9 @@ function ScheduleTable({ slots, hallName, description }: { slots: ScheduleSlot[]
                     </td>
                     <td className="py-2.5 px-3">
                       <span className="text-sm font-medium text-foreground">{slot.item}</span>
+                    </td>
+                    <td className="py-2.5 px-3">
+                      <span className="text-sm text-foreground">{slot.schoolName}</span>
                     </td>
                     <td className="py-2.5 px-3 text-center">
                       <span className="text-sm text-muted-foreground">{slot.duration} min</span>
@@ -181,20 +177,17 @@ function ScheduleTable({ slots, hallName, description }: { slots: ScheduleSlot[]
 
 export default function Program() {
   const [loading, setLoading] = useState(true);
-  const [itemCounts, setItemCounts] = useState<ItemCount[]>([]);
+  const [programItems, setProgramItems] = useState<ProgramItem[]>([]);
 
   useEffect(() => {
     async function fetchItems() {
       try {
-        // Use a public RPC or direct query - items are accessible via edge function
-        // We'll query the counts via a simple approach using the supabase client
         const { data, error } = await supabase.functions.invoke('get-program-data');
         if (error) throw error;
-        setItemCounts(data?.itemCounts || []);
+        setProgramItems(data?.programItems || []);
       } catch (err) {
         console.error('Failed to fetch program data:', err);
-        // Fallback: show empty
-        setItemCounts([]);
+        setProgramItems([]);
       } finally {
         setLoading(false);
       }
@@ -203,20 +196,18 @@ export default function Program() {
   }, []);
 
   const { hall1, hall2 } = useMemo(() => {
-    const hall1Counts = itemCounts.filter(i => i.category === 'Pre-Primary' || i.category === 'Lower Primary');
-    const hall2Counts = itemCounts.filter(i => i.category === 'Primary');
-
+    const h1 = programItems.filter(i => i.category === 'Pre-Primary' || i.category === 'Lower Primary');
+    const h2 = programItems.filter(i => i.category === 'Primary');
     return {
-      hall1: buildScheduleFromCounts(hall1Counts, '06:00'),
-      hall2: buildScheduleFromCounts(hall2Counts, '06:00'),
+      hall1: buildSchedule(h1, '06:00'),
+      hall2: buildSchedule(h2, '06:00'),
     };
-  }, [itemCounts]);
+  }, [programItems]);
 
   const totalPerformances = hall1.length + hall2.length;
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Navigation */}
       <nav className="bg-primary/5 border-b border-border py-3 px-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 group">
@@ -237,8 +228,7 @@ export default function Program() {
         </div>
       </nav>
 
-      <div className="max-w-6xl mx-auto px-4 py-10">
-        {/* Header */}
+      <div className="max-w-7xl mx-auto px-4 py-10">
         <div className="text-center mb-10">
           <h1 className="text-3xl sm:text-4xl font-heading font-bold text-foreground mb-3">
             Event Day Program
@@ -262,7 +252,6 @@ export default function Program() {
           </div>
         ) : (
           <>
-            {/* Legend */}
             <div className="flex flex-wrap justify-center gap-3 mb-8">
               {Object.entries(categoryColors).map(([cat, colors]) => (
                 <Badge key={cat} className={cn("text-xs px-3 py-1", colors)}>{cat}</Badge>
@@ -273,13 +262,11 @@ export default function Program() {
               </Badge>
             </div>
 
-            {/* Two Hall Schedules */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="space-y-6">
               <ScheduleTable slots={hall1} hallName="Hall 1 — Category A (EYE)" description="Pre-Primary & Lower Primary" />
               <ScheduleTable slots={hall2} hallName="Hall 2 — Category B (Primary)" description="Primary Schools" />
             </div>
 
-            {/* Footer note */}
             <div className="mt-8 text-center text-sm text-muted-foreground">
               <p>Times are approximate and based on registered items. Actual schedule may vary.</p>
             </div>
