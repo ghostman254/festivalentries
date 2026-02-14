@@ -1,10 +1,12 @@
+import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { GraduationCap, Clock, MapPin, ArrowLeft } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { GraduationCap, Clock, MapPin, ArrowLeft, Users, Loader2 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { CATEGORY_REGULATIONS, type ItemRegulation } from '@/lib/regulations';
+import { CATEGORY_REGULATIONS, getItemRegulation } from '@/lib/regulations';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ScheduleSlot {
   startTime: string;
@@ -12,7 +14,9 @@ interface ScheduleSlot {
   item: string;
   code: string;
   category: string;
-  duration: number; // in minutes
+  duration: number;
+  maxCast: number | null;
+  count: number; // how many schools performing this item
 }
 
 const INTERVAL_MINUTES = 3;
@@ -38,46 +42,43 @@ function formatTime(time: string): string {
   return `${displayH}:${String(m).padStart(2, '0')} ${suffix}`;
 }
 
-function buildSchedule(items: { reg: ItemRegulation; category: string }[], startTime: string): ScheduleSlot[] {
+interface ItemCount {
+  itemType: string;
+  category: string;
+  count: number;
+}
+
+function buildScheduleFromCounts(
+  itemCounts: ItemCount[],
+  startTime: string
+): ScheduleSlot[] {
   const slots: ScheduleSlot[] = [];
   let current = startTime;
 
-  for (const { reg, category } of items) {
+  for (const { itemType, category, count } of itemCounts) {
+    const reg = getItemRegulation(category, itemType);
+    if (!reg) continue;
+
     const duration = parseDuration(reg.maxTime);
-    const end = addMinutes(current, duration);
-    slots.push({
-      startTime: current,
-      endTime: end,
-      item: reg.itemType,
-      code: reg.code,
-      category,
-      duration,
-    });
-    current = addMinutes(end, INTERVAL_MINUTES);
-  }
 
-  return slots;
-}
-
-// Distribute items across 2 halls
-function generateHallSchedules() {
-  const allItems: { reg: ItemRegulation; category: string }[] = [];
-
-  // Category A first, then Category B
-  for (const [category, regulations] of Object.entries(CATEGORY_REGULATIONS)) {
-    for (const reg of regulations) {
-      allItems.push({ reg, category });
+    // Each submission gets its own time slot
+    for (let i = 0; i < count; i++) {
+      const end = addMinutes(current, duration);
+      slots.push({
+        startTime: current,
+        endTime: end,
+        item: reg.itemType,
+        code: reg.code,
+        category,
+        duration,
+        maxCast: reg.maxCast,
+        count,
+      });
+      current = addMinutes(end, INTERVAL_MINUTES);
     }
   }
 
-  // Split: Pre-Primary + Lower Primary → Hall 1, Primary → Hall 2
-  const hall1Items = allItems.filter(i => i.category === 'Pre-Primary' || i.category === 'Lower Primary');
-  const hall2Items = allItems.filter(i => i.category === 'Primary');
-
-  const hall1Schedule = buildSchedule(hall1Items, '06:00');
-  const hall2Schedule = buildSchedule(hall2Items, '06:00');
-
-  return { hall1: hall1Schedule, hall2: hall2Schedule };
+  return slots;
 }
 
 const categoryColors: Record<string, string> = {
@@ -86,7 +87,18 @@ const categoryColors: Record<string, string> = {
   'Primary': 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300',
 };
 
-function ScheduleTable({ slots, hallName }: { slots: ScheduleSlot[]; hallName: string }) {
+function ScheduleTable({ slots, hallName, description }: { slots: ScheduleSlot[]; hallName: string; description: string }) {
+  const totalDuration = slots.length > 0
+    ? (() => {
+        const lastSlot = slots[slots.length - 1];
+        const [sh, sm] = slots[0].startTime.split(':').map(Number);
+        const [eh, em] = lastSlot.endTime.split(':').map(Number);
+        return (eh * 60 + em) - (sh * 60 + sm);
+      })()
+    : 0;
+  const hours = Math.floor(totalDuration / 60);
+  const mins = totalDuration % 60;
+
   return (
     <Card className="overflow-hidden">
       <CardHeader className="pb-3 bg-primary/5">
@@ -94,60 +106,113 @@ function ScheduleTable({ slots, hallName }: { slots: ScheduleSlot[]; hallName: s
           <MapPin className="h-5 w-5 text-primary" />
           {hallName}
         </CardTitle>
+        <CardDescription className="text-xs">
+          {description} • {slots.length} performances • ~{hours}h {mins}m total
+        </CardDescription>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border bg-muted/30">
-                <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Time</th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Code</th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Item</th>
-                <th className="text-center py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Duration</th>
-                <th className="text-center py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Category</th>
-              </tr>
-            </thead>
-            <tbody>
-              {slots.map((slot, idx) => (
-                <tr
-                  key={`${slot.code}-${idx}`}
-                  className={cn(
-                    "border-b border-border last:border-0 transition-colors hover:bg-muted/50",
-                    idx % 2 === 0 ? "bg-card" : "bg-muted/20"
-                  )}
-                >
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-1.5 text-sm font-medium text-foreground">
-                      <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                      {formatTime(slot.startTime)} – {formatTime(slot.endTime)}
-                    </div>
-                  </td>
-                  <td className="py-3 px-4">
-                    <Badge variant="outline" className="font-mono text-xs">{slot.code}</Badge>
-                  </td>
-                  <td className="py-3 px-4">
-                    <span className="text-sm font-medium text-foreground">{slot.item}</span>
-                  </td>
-                  <td className="py-3 px-4 text-center">
-                    <span className="text-sm text-muted-foreground">{slot.duration} min</span>
-                  </td>
-                  <td className="py-3 px-4 text-center">
-                    <Badge className={cn("text-xs", categoryColors[slot.category])}>
-                      {slot.category}
-                    </Badge>
-                  </td>
+        {slots.length === 0 ? (
+          <div className="py-10 text-center text-muted-foreground text-sm">
+            No items registered yet for this hall.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-border bg-muted/30">
+                  <th className="text-left py-3 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">#</th>
+                  <th className="text-left py-3 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Time</th>
+                  <th className="text-left py-3 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Code</th>
+                  <th className="text-left py-3 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Item</th>
+                  <th className="text-center py-3 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Duration</th>
+                  <th className="text-center py-3 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    <span className="inline-flex items-center gap-1"><Users className="h-3 w-3" />Max Cast</span>
+                  </th>
+                  <th className="text-center py-3 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Category</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {slots.map((slot, idx) => (
+                  <tr
+                    key={`${slot.code}-${idx}`}
+                    className={cn(
+                      "border-b border-border last:border-0 transition-colors hover:bg-muted/50",
+                      idx % 2 === 0 ? "bg-card" : "bg-muted/20"
+                    )}
+                  >
+                    <td className="py-2.5 px-3 text-xs text-muted-foreground">{idx + 1}</td>
+                    <td className="py-2.5 px-3">
+                      <div className="flex items-center gap-1 text-sm font-medium text-foreground whitespace-nowrap">
+                        <Clock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                        {formatTime(slot.startTime)} – {formatTime(slot.endTime)}
+                      </div>
+                    </td>
+                    <td className="py-2.5 px-3">
+                      <Badge variant="outline" className="font-mono text-xs">{slot.code}</Badge>
+                    </td>
+                    <td className="py-2.5 px-3">
+                      <span className="text-sm font-medium text-foreground">{slot.item}</span>
+                    </td>
+                    <td className="py-2.5 px-3 text-center">
+                      <span className="text-sm text-muted-foreground">{slot.duration} min</span>
+                    </td>
+                    <td className="py-2.5 px-3 text-center">
+                      {slot.maxCast !== null ? (
+                        <Badge variant="secondary" className="font-mono text-xs">{slot.maxCast}</Badge>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
+                    </td>
+                    <td className="py-2.5 px-3 text-center">
+                      <Badge className={cn("text-xs", categoryColors[slot.category])}>
+                        {slot.category}
+                      </Badge>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
 }
 
 export default function Program() {
-  const { hall1, hall2 } = generateHallSchedules();
+  const [loading, setLoading] = useState(true);
+  const [itemCounts, setItemCounts] = useState<ItemCount[]>([]);
+
+  useEffect(() => {
+    async function fetchItems() {
+      try {
+        // Use a public RPC or direct query - items are accessible via edge function
+        // We'll query the counts via a simple approach using the supabase client
+        const { data, error } = await supabase.functions.invoke('get-program-data');
+        if (error) throw error;
+        setItemCounts(data?.itemCounts || []);
+      } catch (err) {
+        console.error('Failed to fetch program data:', err);
+        // Fallback: show empty
+        setItemCounts([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchItems();
+  }, []);
+
+  const { hall1, hall2 } = useMemo(() => {
+    const hall1Counts = itemCounts.filter(i => i.category === 'Pre-Primary' || i.category === 'Lower Primary');
+    const hall2Counts = itemCounts.filter(i => i.category === 'Primary');
+
+    return {
+      hall1: buildScheduleFromCounts(hall1Counts, '06:00'),
+      hall2: buildScheduleFromCounts(hall2Counts, '06:00'),
+    };
+  }, [itemCounts]);
+
+  const totalPerformances = hall1.length + hall2.length;
 
   return (
     <div className="min-h-screen bg-background">
@@ -183,29 +248,43 @@ export default function Program() {
             The event runs from <strong className="text-foreground">6:00 AM to 6:00 PM</strong> across two halls.
             Each performance is followed by a 3-minute transition interval.
           </p>
+          {!loading && (
+            <p className="text-sm text-muted-foreground mt-2">
+              <strong className="text-foreground">{totalPerformances}</strong> total performances scheduled
+            </p>
+          )}
         </div>
 
-        {/* Legend */}
-        <div className="flex flex-wrap justify-center gap-3 mb-8">
-          {Object.entries(categoryColors).map(([cat, colors]) => (
-            <Badge key={cat} className={cn("text-xs px-3 py-1", colors)}>{cat}</Badge>
-          ))}
-          <Badge variant="outline" className="text-xs px-3 py-1">
-            <Clock className="h-3 w-3 mr-1" />
-            3 min intervals between acts
-          </Badge>
-        </div>
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <span className="ml-3 text-muted-foreground">Loading program...</span>
+          </div>
+        ) : (
+          <>
+            {/* Legend */}
+            <div className="flex flex-wrap justify-center gap-3 mb-8">
+              {Object.entries(categoryColors).map(([cat, colors]) => (
+                <Badge key={cat} className={cn("text-xs px-3 py-1", colors)}>{cat}</Badge>
+              ))}
+              <Badge variant="outline" className="text-xs px-3 py-1">
+                <Clock className="h-3 w-3 mr-1" />
+                3 min intervals between acts
+              </Badge>
+            </div>
 
-        {/* Two Hall Schedules */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <ScheduleTable slots={hall1} hallName="Hall 1 — Category A (EYE)" />
-          <ScheduleTable slots={hall2} hallName="Hall 2 — Category B (Primary)" />
-        </div>
+            {/* Two Hall Schedules */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <ScheduleTable slots={hall1} hallName="Hall 1 — Category A (EYE)" description="Pre-Primary & Lower Primary" />
+              <ScheduleTable slots={hall2} hallName="Hall 2 — Category B (Primary)" description="Primary Schools" />
+            </div>
 
-        {/* Footer note */}
-        <div className="mt-8 text-center text-sm text-muted-foreground">
-          <p>Times are approximate. Actual schedule may vary depending on the flow of events.</p>
-        </div>
+            {/* Footer note */}
+            <div className="mt-8 text-center text-sm text-muted-foreground">
+              <p>Times are approximate and based on registered items. Actual schedule may vary.</p>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
