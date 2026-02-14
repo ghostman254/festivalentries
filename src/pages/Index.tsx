@@ -72,6 +72,11 @@ export default function Index() {
             <span className="font-heading font-bold text-foreground">Creative Arts Portal</span>
           </div>
           <div className="flex items-center gap-2">
+            <Link to="/program">
+              <Button size="sm" variant="ghost">
+                Program
+              </Button>
+            </Link>
             <Link to="/submit">
               <Button size="sm">
                 Submit Items

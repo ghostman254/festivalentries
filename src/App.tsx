@@ -8,6 +8,7 @@ import SubmissionForm from "./pages/SubmissionForm";
 import Confirmation from "./pages/Confirmation";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
+import Program from "./pages/Program";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/confirmation" element={<Confirmation />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/program" element={<Program />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
