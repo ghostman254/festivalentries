@@ -348,6 +348,26 @@ export default function AdminDashboard() {
     return diff < 7 * 24 * 60 * 60 * 1000;
   }).length;
 
+  // Item type counts per category
+  const categoryItemBreakdown = useMemo(() => {
+    return SCHOOL_CATEGORIES.map(cat => {
+      const catSchools = schools.filter(s => s.category === cat);
+      const typeCounts: Record<string, number> = {};
+      catSchools.forEach(s => s.items.forEach(i => {
+        typeCounts[i.item_type] = (typeCounts[i.item_type] || 0) + 1;
+      }));
+      const types = Object.entries(typeCounts)
+        .sort((a, b) => b[1] - a[1])
+        .map(([name, count]) => ({ name, count }));
+      return {
+        category: cat,
+        schoolCount: catSchools.length,
+        itemCount: catSchools.reduce((sum, s) => sum + s.items.length, 0),
+        types,
+      };
+    });
+  }, [schools]);
+
   // Category breakdown for bar chart
   const categoryData = useMemo(() => {
     return SCHOOL_CATEGORIES.map(cat => ({
@@ -467,60 +487,66 @@ export default function AdminDashboard() {
 
       <main className="max-w-6xl mx-auto px-4 py-6 space-y-6">
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Summary card */}
           <Card>
-            <CardContent className="pt-4 pb-4">
+            <CardContent className="pt-4 pb-4 space-y-3">
               <div className="flex items-center gap-2 mb-1">
                 <GraduationCap className="h-4 w-4 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">Schools</p>
+                <p className="text-sm font-medium text-muted-foreground">Overview</p>
               </div>
-              <p className="text-3xl font-heading font-bold text-foreground">{schools.length}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4 pb-4">
-              <div className="flex items-center gap-2 mb-1">
-                <BarChart3 className="h-4 w-4 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">Items</p>
-              </div>
-              <p className="text-3xl font-heading font-bold text-foreground">{totalItems}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4 pb-4">
-              <div className="flex items-center gap-2 mb-1">
-                <Users className="h-4 w-4 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">Teachers</p>
-              </div>
-              <p className="text-3xl font-heading font-bold text-foreground">{totalTeachers}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4 pb-4">
-              <div className="flex items-center gap-2 mb-1">
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">This Week</p>
-              </div>
-              <p className="text-3xl font-heading font-bold text-foreground">{recentSchools}</p>
-              <p className="text-xs text-muted-foreground">new schools</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4 pb-4 flex items-center justify-between">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">Portal</p>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <p className="text-2xl font-heading font-bold text-foreground">{schools.length}</p>
+                  <p className="text-xs text-muted-foreground">Schools</p>
                 </div>
-                <p className="text-lg font-heading font-bold text-foreground">
-                  {submissionsOpen ? 'Open' : 'Closed'}
-                </p>
+                <div>
+                  <p className="text-2xl font-heading font-bold text-foreground">{totalItems}</p>
+                  <p className="text-xs text-muted-foreground">Items</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-heading font-bold text-foreground">{totalTeachers}</p>
+                  <p className="text-xs text-muted-foreground">Teachers</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-heading font-bold text-foreground">{recentSchools}</p>
+                  <p className="text-xs text-muted-foreground">This Week</p>
+                </div>
               </div>
-              <div className="flex flex-col items-end gap-1">
+              <div className="flex items-center justify-between pt-2 border-t border-border">
+                <div className="flex items-center gap-2">
+                  <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">Portal: <span className="font-semibold text-foreground">{submissionsOpen ? 'Open' : 'Closed'}</span></span>
+                </div>
                 <Switch checked={submissionsOpen} onCheckedChange={toggleSubmissions} />
               </div>
             </CardContent>
           </Card>
+
+          {/* Category breakdown cards */}
+          {categoryItemBreakdown.map(cat => (
+            <Card key={cat.category}>
+              <CardContent className="pt-4 pb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium text-muted-foreground">{cat.category}</p>
+                  <Badge variant="outline" className="text-xs">{cat.schoolCount} schools</Badge>
+                </div>
+                <p className="text-2xl font-heading font-bold text-foreground mb-3">{cat.itemCount} <span className="text-sm font-normal text-muted-foreground">items</span></p>
+                {cat.types.length === 0 ? (
+                  <p className="text-xs text-muted-foreground italic">No items yet</p>
+                ) : (
+                  <div className="space-y-1.5 max-h-[160px] overflow-y-auto">
+                    {cat.types.map(t => (
+                      <div key={t.name} className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground truncate mr-2" title={t.name}>{t.name}</span>
+                        <span className="font-semibold text-foreground shrink-0">{t.count}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
         {/* Charts Row 1: Category breakdown + Registration Timeline */}
